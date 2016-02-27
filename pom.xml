@@ -13,30 +13,39 @@
 	<name>Cryptomator Windows installer</name>
 
 	<properties>
-		<cryptomator.jar.version>0.10.1</cryptomator.jar.version>
-		<cryptomator.jar.url>https://github.com/cryptomator/cryptomator/releases/download/${cryptomator.jar.version}/Cryptomator-${cryptomator.jar.version}.jar</cryptomator.jar.url>
+		<cryptomator.ui.version>0.11.0-SNAPSHOT</cryptomator.ui.version>
 		<javafx.tools.ant.jar>${java.home}/../lib/ant-javafx.jar</javafx.tools.ant.jar>
 	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.cryptomator</groupId>
+			<artifactId>ui</artifactId>
+			<version>${cryptomator.ui.version}</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>copy-libs</id>
+							<phase>prepare-package</phase>
+							<goals>
+								<goal>copy-dependencies</goal>
+							</goals>
+							<configuration>
+								<outputDirectory>${project.build.directory}/libs</outputDirectory>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.8</version>
 				<executions>
-					<execution>
-						<id>load-uber-jar</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target name="download-jar">
-								<mkdir dir="${project.build.directory}/download"/>
-								<get src="${cryptomator.jar.url}" skipexisting="true" dest="${project.build.directory}/download/Cryptomator.jar"/>
-							</target>
-						</configuration>
-					</execution>
 					<execution>
 						<id>create-deployment-bundle</id>
 						<phase>package</phase>
@@ -53,7 +62,10 @@
 								<!-- Create main application jar -->
 								<fx:jar destfile="${project.build.directory}/Cryptomator-${project.version}.jar">
 									<fx:application refid="Cryptomator" />
-									<fx:fileset dir="${project.build.directory}" includes="download/Cryptomator.jar" />
+									<fx:fileset dir="${project.build.directory}/libs" includes="ui-${cryptomator.ui.version}.jar" />
+									<fx:resources>
+										<fx:fileset dir="${project.build.directory}/libs" type="jar" includes="*.jar" excludes="ui-${cryptomator.ui.version}.jar" />
+									</fx:resources>
 									<fx:manifest>
 										<fx:attribute name="Implementation-Vendor" value="cryptomator.org" />
 										<fx:attribute name="Implementation-Version" value="${project.version}" />
@@ -68,7 +80,8 @@
 										<fx:property name="logPath" value="%appdata%/Cryptomator/cryptomator.log" />
 									</fx:platform>
 									<fx:resources>
-										<fx:fileset dir="${project.build.directory}" type="jar" includes="Cryptomator-${project.version}.jar"/>
+										<fx:fileset dir="${project.build.directory}" type="jar" includes="Cryptomator-${project.version}.jar" />
+										<fx:fileset dir="${project.build.directory}/libs" type="jar" includes="*.jar" excludes="ui-${cryptomator.ui.version}.jar"/>
 									</fx:resources>
 									<fx:permissions elevated="false" />
 									<fx:preferences install="true" />
