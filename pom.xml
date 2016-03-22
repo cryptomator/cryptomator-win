@@ -77,7 +77,7 @@
 								<fx:deploy nativeBundles="exe" outdir="${project.build.directory}" outfile="Cryptomator-${project.version}" verbose="true">
 									<fx:application refid="Cryptomator"/>
 									<fx:info title="Cryptomator" vendor="cryptomator.org" copyright="cryptomator.org" license="MIT" category="Utility">
-										<fx:association mimetype="application/x-vnd.cryptomator-vault-metadata" extension="cryptomator" description="Cryptomator Vault Metadata" icon="Cryptomator.ico" />
+										<fx:association mimetype="application/x-vnd.cryptomator-vault-metadata" extension="cryptomator" description="Cryptomator Vault Metadata" />
 									</fx:info>
 									<fx:platform javafx="2.2+" j2se="8.0" >
 										<fx:property name="cryptomator.logPath" value="%appdata%/Cryptomator/cryptomator.log" />
