@@ -8,12 +8,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cryptomator</groupId>
 	<artifactId>cryptomator-win</artifactId>
-	<version>1.0.1</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Cryptomator Windows installer</name>
 
 	<properties>
-		<cryptomator.ui.version>1.0.1</cryptomator.ui.version>
+		<cryptomator.ui.version>${project.version}</cryptomator.ui.version>
 		<javafx.tools.ant.jar>${java.home}/../lib/ant-javafx.jar</javafx.tools.ant.jar>
 	</properties>
 	
@@ -76,7 +76,9 @@
 								<!-- Create native package -->
 								<fx:deploy nativeBundles="exe" outdir="${project.build.directory}" outfile="Cryptomator-${project.version}" verbose="true">
 									<fx:application refid="Cryptomator"/>
-									<fx:info title="Cryptomator" vendor="cryptomator.org" copyright="cryptomator.org" license="MIT" category="Utility" />
+									<fx:info title="Cryptomator" vendor="cryptomator.org" copyright="cryptomator.org" license="MIT" category="Utility">
+										<fx:association mimetype="application/x-vnd.cryptomator-vault-metadata" extension="cryptomator" description="Cryptomator Vault Metadata" icon="Cryptomator.ico" />
+									</fx:info>
 									<fx:platform javafx="2.2+" j2se="8.0" >
 										<fx:property name="cryptomator.logPath" value="%appdata%/Cryptomator/cryptomator.log" />
 									</fx:platform>
