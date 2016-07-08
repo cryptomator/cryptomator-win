@@ -8,7 +8,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.cryptomator</groupId>
 	<artifactId>cryptomator-win</artifactId>
-	<version>1.0.4</version>
+	<version>1.1.1</version>
 	<packaging>pom</packaging>
 	<name>Cryptomator Windows installer</name>
 
@@ -24,7 +24,7 @@
 			<version>${cryptomator.ui.version}</version>
 		</dependency>
 	</dependencies>
-
+	
 	<build>
 		<plugins>
 			<plugin>
