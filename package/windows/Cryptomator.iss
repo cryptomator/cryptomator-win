@@ -6,11 +6,10 @@ AppName=APPLICATION_NAME
 AppVersion=APPLICATION_VERSION
 AppVerName=APPLICATION_NAME APPLICATION_VERSION
 AppPublisher=APPLICATION_VENDOR
-AppComments=APPLICATION_COMMENTS
 AppCopyright=APPLICATION_COPYRIGHT
 AppPublisherURL=https://cryptomator.org/
-;AppSupportURL=http://java.com/
-;AppUpdatesURL=http://java.com/
+AppSupportURL=https://cryptomator.org/help/
+AppUpdatesURL=https://cryptomator.org/downloads/#winDownload
 DefaultDirName=APPLICATION_INSTALL_ROOT\APPLICATION_NAME
 DisableStartupPrompt=Yes
 DisableDirPage=No
@@ -21,8 +20,8 @@ DisableWelcomePage=Yes
 DefaultGroupName=APPLICATION_GROUP
 ;Optional License
 LicenseFile=APPLICATION_LICENSE_FILE
-;WinXP or above
-MinVersion=0,5.1
+;Vista or above
+MinVersion=6.0
 OutputBaseFilename=INSTALLER_FILE_NAME
 Compression=lzma
 SolidCompression=yes
