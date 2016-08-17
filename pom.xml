@@ -80,8 +80,10 @@
 										<fx:association mimetype="application/x-vnd.cryptomator-vault-metadata" extension="cryptomator" description="Cryptomator Vault Metadata" />
 									</fx:info>
 									<fx:platform javafx="2.2+" j2se="8.0" >
-										<fx:property name="cryptomator.logPath" value="%appdata%/Cryptomator/cryptomator.log" />
-										<fx:property name="cryptomator.upgradeLogPath" value="%appdata%/Cryptomator/upgrade.log" />
+										<fx:property name="cryptomator.logPath" value="~/AppData/Roaming/Cryptomator/cryptomator.log" />
+										<fx:property name="cryptomator.upgradeLogPath" value="~/AppData/Roaming/Cryptomator/upgrade.log" />
+										<fx:property name="cryptomator.settingsPath" value="~/AppData/Roaming/Cryptomator/settings.json" />
+										<fx:jvmarg value="-Xmx512m" />
 									</fx:platform>
 									<fx:resources>
 										<fx:fileset dir="." type="license" includes="full-license.rtf" />
