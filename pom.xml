@@ -24,6 +24,72 @@
 			<version>${cryptomator.ui.version}</version>
 		</dependency>
 	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>x86</id>
+			<activation>
+				<property>
+					<name>sun.arch.data.model</name>
+					<value>32</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.coderplus.maven.plugins</groupId>
+						<artifactId>copy-rename-maven-plugin</artifactId>
+						<version>1.0.1</version>
+						<executions>
+							<execution>
+								<id>copy-x86-dll</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>copy</goal>
+								</goals>
+								<configuration>
+									<sourceFile>${project.basedir}/package/windows/WinFunctions-x86.dll</sourceFile>
+									<destinationFile>${project.build.directory}/libs/WinFunctions.dll</destinationFile>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>x64</id>
+			<activation>
+				<property>
+					<name>sun.arch.data.model</name>
+					<value>64</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.coderplus.maven.plugins</groupId>
+						<artifactId>copy-rename-maven-plugin</artifactId>
+						<version>1.0.1</version>
+						<executions>
+							<execution>
+								<id>copy-x64-dll</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>copy</goal>
+								</goals>
+								<configuration>
+									<sourceFile>${project.basedir}/package/windows/WinFunctions-x64.dll</sourceFile>
+									<destinationFile>${project.build.directory}/libs/WinFunctions.dll</destinationFile>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<build>
 		<plugins>
@@ -89,7 +155,7 @@
 										<fx:fileset dir="." type="license" includes="full-license.rtf" />
 										<fx:fileset dir="${project.build.directory}" type="jar" includes="Cryptomator-${project.version}.jar" />
 										<fx:fileset dir="${project.build.directory}/libs" type="jar" includes="*.jar" excludes="ui-${cryptomator.ui.version}.jar" />
-										<fx:fileset dir="${basedir}/package/windows" type="data" includes="*.dll" />
+										<fx:fileset dir="${project.build.directory}/libs" type="data" includes="*.dll" />
 									</fx:resources>
 									<fx:permissions elevated="false" />
 									<fx:preferences install="true" />
