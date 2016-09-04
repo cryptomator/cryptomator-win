@@ -149,6 +149,7 @@
 										<fx:property name="cryptomator.logPath" value="~/AppData/Roaming/Cryptomator/cryptomator.log" />
 										<fx:property name="cryptomator.upgradeLogPath" value="~/AppData/Roaming/Cryptomator/upgrade.log" />
 										<fx:property name="cryptomator.settingsPath" value="~/AppData/Roaming/Cryptomator/settings.json" />
+										<fx:property name="cryptomator.keychainPath" value="~/AppData/Roaming/Cryptomator/keychain.json" />
 										<fx:jvmarg value="-Xmx512m" />
 									</fx:platform>
 									<fx:resources>
