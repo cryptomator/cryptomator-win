@@ -38,35 +38,43 @@ ArchitecturesInstallIn64BitMode=ARCHITECTURE_BIT_MODE
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Registry]
-;Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Internet Settings"; ValueType: dword; ValueName: "AutoDetect"; ValueData: "0"
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; ValueType: dword; ValueName: "FileSizeLimitInBytes"; ValueData: "$ffffffff"
+
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\app"
+Type: filesandordirs; Name: "{app}\runtime"
 
 [Files]
 Source: "APPLICATION_NAME\APPLICATION_NAME.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "APPLICATION_NAME\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\APPLICATION_NAME"; Filename: "{app}\APPLICATION_NAME.exe"; IconFilename: "{app}\APPLICATION_NAME.ico"; Check: APPLICATION_MENU_SHORTCUT()
-Name: "{commondesktop}\APPLICATION_NAME"; Filename: "{app}\APPLICATION_NAME.exe";  IconFilename: "{app}\APPLICATION_NAME.ico"; Check: APPLICATION_DESKTOP_SHORTCUT()
+Name: "{group}\APPLICATION_NAME"; Filename: "{app}\APPLICATION_NAME.exe"; IconFilename: "{app}\APPLICATION_NAME.ico"
 
 [Run]
-Filename: "{app}\RUN_FILENAME.exe"; Description: "{cm:LaunchProgram,APPLICATION_NAME}"; Flags: nowait postinstall skipifsilent; Check: APPLICATION_NOT_SERVICE()
-Filename: "{app}\RUN_FILENAME.exe"; Parameters: "-install -svcName ""APPLICATION_NAME"" -svcDesc ""APPLICATION_DESCRIPTION"" -mainExe ""APPLICATION_LAUNCHER_FILENAME"" START_ON_INSTALL RUN_AT_STARTUP"; Check: APPLICATION_SERVICE()
-Filename: "net"; Parameters: "stop webclient"; Description: "Stopping WebClient..."; Flags: waituntilterminated runhidden
-Filename: "net"; Parameters: "start webclient"; Description: "Restarting WebClient..."; Flags: waituntilterminated runhidden
-
-[UninstallRun]
-Filename: "{app}\RUN_FILENAME.exe "; Parameters: "-uninstall -svcName APPLICATION_NAME STOP_ON_UNINSTALL"; Check: APPLICATION_SERVICE()
+Filename: "{app}\RUN_FILENAME.exe"; Description: "{cm:LaunchProgram,APPLICATION_NAME}"; Flags: nowait postinstall skipifsilent
+Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden
+Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; Flags: waituntilterminated runhidden
 
 [Code]
-function returnTrue(): Boolean;
-begin
-  Result := True;
-end;
+const
+  RegNetworkProviderOrderSubkey = 'SYSTEM\CurrentControlSet\Control\NetworkProvider\Order';
+  RegProviderOrderValueName = 'ProviderOrder';
+  RegWebClientValue = 'webclient';
 
-function returnFalse(): Boolean;
+procedure PatchProviderOrderRegValue();
+var
+  OldValue: String;
 begin
-  Result := False;
+  OldValue := ExpandConstant('{reg:HKLM\' + RegNetworkProviderOrderSubkey + ',' + RegProviderOrderValueName + '|}');
+  if CompareStr(OldValue, '') = 0 then
+  begin
+    RegWriteStringValue(HKEY_LOCAL_MACHINE, RegNetworkProviderOrderSubkey, RegProviderOrderValueName, RegWebClientValue);
+  end
+  else if Pos(RegWebClientValue, OldValue) = 0 then
+  begin
+    RegWriteStringValue(HKEY_LOCAL_MACHINE, RegNetworkProviderOrderSubkey, RegProviderOrderValueName, RegWebClientValue + ',' + OldValue);
+  end;
 end;
 
 function InitializeSetup(): Boolean;
@@ -76,4 +84,10 @@ begin
 //   if upgrade => check if same app is running and wait for it to exit
 //   Add pack200/unpack200 support?
   Result := True;
+end;
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+begin
+  PatchProviderOrderRegValue();
+  Result := '';
 end;
