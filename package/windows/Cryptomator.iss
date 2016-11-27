@@ -62,18 +62,57 @@ const
   RegProviderOrderValueName = 'ProviderOrder';
   RegWebClientValue = 'webclient';
 
+function StrSplit(Text: String; Separator: String): TArrayOfString;
+var
+  i, p: Integer;
+  Dest: TArrayOfString; 
+begin
+  i := 0;
+  repeat
+    SetArrayLength(Dest, i + 1);
+    p := Pos(Separator, Text);
+    if p > 0 then
+    begin
+      Dest[i] := Copy(Text, 1, p-1);
+      Text := Copy(Text, p + Length(Separator), Length(Text));
+      i := i + 1;
+    end
+    else
+    begin
+      Dest[i] := Text;
+      Text := '';
+    end;
+  until Length(Text) = 0;
+  Result := Dest
+end;
+
 procedure PatchProviderOrderRegValue();
 var
+  i: Integer;
   OldValue: String;
+  Values: TArrayOfString;
+  WebClientValueFound: Boolean;
 begin
   OldValue := ExpandConstant('{reg:HKLM\' + RegNetworkProviderOrderSubkey + ',' + RegProviderOrderValueName + '|}');
-  if CompareStr(OldValue, '') = 0 then
+  Values := StrSplit(OldValue, ',');
+  if (GetArrayLength(Values) = 1) and (CompareStr(Values[0], '') = 0) then
   begin
     RegWriteStringValue(HKEY_LOCAL_MACHINE, RegNetworkProviderOrderSubkey, RegProviderOrderValueName, RegWebClientValue);
   end
-  else if Pos(RegWebClientValue, OldValue) = 0 then
+  else
   begin
-    RegWriteStringValue(HKEY_LOCAL_MACHINE, RegNetworkProviderOrderSubkey, RegProviderOrderValueName, RegWebClientValue + ',' + OldValue);
+    WebClientValueFound := False;
+    for i := 0 to GetArrayLength(Values) - 1 do
+    begin
+      if CompareStr(RegWebClientValue, Values[i]) = 0 then
+      begin
+        WebClientValueFound := True;
+      end;
+    end;
+    if not WebClientValueFound then
+    begin
+      RegWriteStringValue(HKEY_LOCAL_MACHINE, RegNetworkProviderOrderSubkey, RegProviderOrderValueName, RegWebClientValue + ',' + OldValue);
+    end;
   end;
 end;
 
