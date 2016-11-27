@@ -73,7 +73,7 @@ begin
     p := Pos(Separator, Text);
     if p > 0 then
     begin
-      Dest[i] := Copy(Text, 1, p-1);
+      Dest[i] := Copy(Text, 1, p - 1);
       Text := Copy(Text, p + Length(Separator), Length(Text));
       i := i + 1;
     end
