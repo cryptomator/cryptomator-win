@@ -45,7 +45,7 @@ Type: filesandordirs; Name: "{app}\app"
 Type: filesandordirs; Name: "{app}\runtime"
 
 [UninstallDelete]
-Type: filesandordirs; Name: "{userappdata}"
+Type: filesandordirs; Name: "{userappdata}\APPLICATION_NAME"
 
 [Files]
 Source: "APPLICATION_NAME\APPLICATION_NAME.exe"; DestDir: "{app}"; Flags: ignoreversion
