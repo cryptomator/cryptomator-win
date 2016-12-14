@@ -44,6 +44,9 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; Va
 Type: filesandordirs; Name: "{app}\app"
 Type: filesandordirs; Name: "{app}\runtime"
 
+[UninstallDelete]
+Type: filesandordirs; Name: "{userappdata}"
+
 [Files]
 Source: "APPLICATION_NAME\APPLICATION_NAME.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "APPLICATION_NAME\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -65,7 +68,7 @@ const
 function StrSplit(Text: String; Separator: String): TArrayOfString;
 var
   i, p: Integer;
-  Dest: TArrayOfString; 
+  Dest: TArrayOfString;
 begin
   i := 0;
   repeat
