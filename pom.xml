@@ -146,8 +146,7 @@
 										<fx:association mimetype="application/x-vnd.cryptomator-vault-metadata" extension="cryptomator" description="Cryptomator Vault Metadata" />
 									</fx:info>
 									<fx:platform javafx="2.2+" j2se="8.0">
-										<fx:property name="cryptomator.logPath" value="~/AppData/Roaming/Cryptomator/cryptomator.log" />
-										<fx:property name="cryptomator.upgradeLogPath" value="~/AppData/Roaming/Cryptomator/upgrade.log" />
+										<fx:property name="logback.configurationFile" value="logback.xml" />
 										<fx:property name="cryptomator.settingsPath" value="~/AppData/Roaming/Cryptomator/settings.json" />
 										<fx:property name="cryptomator.keychainPath" value="~/AppData/Roaming/Cryptomator/keychain.json" />
 										<fx:property name="cryptomator.ipcPortPath" value="~/AppData/Roaming/Cryptomator/ipcPort.bin" />
@@ -155,6 +154,7 @@
 									</fx:platform>
 									<fx:resources>
 										<fx:fileset dir="." type="license" includes="full-license.rtf" />
+										<fx:fileset dir="." type="data" includes="logback.xml" />
 										<fx:fileset dir="${project.build.directory}" type="jar" includes="Cryptomator-${project.version}.jar" />
 										<fx:fileset dir="${project.build.directory}/libs" type="jar" includes="*.jar" excludes="launcher-${cryptomator.launcher.version}.jar" />
 										<fx:fileset dir="${project.build.directory}/libs" type="data" includes="*.dll" />
