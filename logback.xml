@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE xml>
-<configuration scan="true" debug="true">
+<configuration scan="true">
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
@@ -28,8 +28,8 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.cryptomator" level="INFO" />
-	<logger name="org.eclipse.jetty.server.Server" level="INFO" />
+	<logger name="org.cryptomator" level="DEBUG" />
+	<logger name="org.eclipse.jetty.server.HttpChannel" level="DEBUG" />
 	<logger name="org.cryptomator.ui.model" level="INFO">
 		<appender-ref ref="UPGRADE_FILE" />
 	</logger>
