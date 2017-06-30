@@ -119,6 +119,26 @@ begin
   end;
 end;
 
+procedure PatchHostsFile();
+var
+  contents: TStringList;
+  filename, statement: String;
+begin
+  filename := ExpandConstant('{sys}\drivers\etc\hosts');
+  Log('Reading ' + filename);
+  contents := TStringList.Create();
+  if(FileExists(filename)) then begin
+    contents.LoadFromFile(filename);
+  end;
+
+  statement := '127.0.0.1 cryptomator-vault';
+  if(contents.IndexOf(statement) < 0) then begin
+    Log('Adding' + statement);
+    contents.Append(statement);
+    contents.SaveToFile(filename);
+  end;
+end;
+
 function InitializeSetup(): Boolean;
 begin
 // Possible future improvements:
@@ -130,6 +150,7 @@ end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
+  PatchHostsFile();
   PatchProviderOrderRegValue();
   Result := '';
 end;
