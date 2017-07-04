@@ -135,7 +135,11 @@ begin
   if(contents.IndexOf(statement) < 0) then begin
     Log('Adding' + statement);
     contents.Append(statement);
-    contents.SaveToFile(filename);
+    try
+      contents.SaveToFile(filename);
+    except
+      MsgBox('Unable to write to ' + filename + '.  To improve compatibility with Windows, we''d advise you to add this line manually:' + #13#10#13#10 + statement + #13#10#13#10 + 'Installation will continue after pressing OK.', mbInformation, MB_OK);
+    end;
   end;
 end;
 
