@@ -19,7 +19,7 @@
 			<version>${cryptomator.launcher.version}</version>
 		</dependency>
 	</dependencies>
-	
+
 	<profiles>
 		<profile>
 			<id>x86</id>
@@ -45,6 +45,24 @@
 								<configuration>
 									<sourceFile>${project.basedir}/package/windows/WinFunctions-x86.dll</sourceFile>
 									<destinationFile>${project.build.directory}/libs/WinFunctions.dll</destinationFile>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.6.0</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>C:\Program Files (x86)\Inno Setup 5\ISCC.exe</executable>
+									<workingDirectory>${project.build.directory}/bundles</workingDirectory>
+									<commandlineArgs>setup-x86.iss /sdefault="signtool $p"</commandlineArgs>
 								</configuration>
 							</execution>
 						</executions>
@@ -81,6 +99,24 @@
 							</execution>
 						</executions>
 					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.6.0</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<configuration>
+									<executable>C:\Program Files (x86)\Inno Setup 5\ISCC.exe</executable>
+									<workingDirectory>${project.build.directory}/bundles</workingDirectory>
+									<commandlineArgs>setup-x64.iss /sdefault="signtool $p"</commandlineArgs>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>
@@ -93,7 +129,7 @@
 				<executions>
 					<execution>
 						<id>copy-libs</id>
-						<phase>prepare-package</phase>
+						<phase>process-resources</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>
@@ -104,12 +140,40 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.2</version>
+				<executions>
+					<execution>
+						<id>prepare-innosetup</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/bundles</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}/innosetup</directory>
+									<include>*.iss</include>
+									<filtering>true</filtering>
+								</resource>
+								<resource>
+									<directory>${project.basedir}/innosetup</directory>
+									<exclude>*.iss</exclude>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.8</version>
 				<executions>
 					<execution>
-						<id>create-deployment-bundle</id>
-						<phase>package</phase>
+						<id>create-image</id>
+						<phase>compile</phase>
 						<goals>
 							<goal>run</goal>
 						</goals>
@@ -135,7 +199,7 @@
 								</fx:jar>
 
 								<!-- Create native package -->
-								<fx:deploy nativeBundles="exe" outdir="${project.build.directory}" outfile="Cryptomator-${project.version}" verbose="true">
+								<fx:deploy nativeBundles="image" outdir="${project.build.directory}" verbose="true">
 									<fx:application refid="Cryptomator" />
 									<fx:info title="Cryptomator" vendor="cryptomator.org" copyright="cryptomator.org" license="MIT" category="Utility">
 										<fx:association mimetype="application/x-vnd.cryptomator-vault-metadata" extension="cryptomator" description="Cryptomator Vault Metadata" />
@@ -148,14 +212,32 @@
 										<fx:jvmarg value="-Xmx512m" />
 									</fx:platform>
 									<fx:resources>
-										<fx:fileset dir="." type="license" includes="full-license.rtf" />
 										<fx:fileset dir="." type="data" includes="logback.xml" />
 										<fx:fileset dir="${project.build.directory}" type="jar" includes="Cryptomator-${project.version}.jar" />
 										<fx:fileset dir="${project.build.directory}/libs" type="jar" includes="*.jar" excludes="launcher-${cryptomator.launcher.version}.jar" />
 										<fx:fileset dir="${project.build.directory}/libs" type="data" includes="*.dll" />
 									</fx:resources>
-									<fx:preferences install="true" />
 								</fx:deploy>
+							</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>cleanup-image</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target xmlns="antlib:org.apache.tools.ant">
+								<echo message="Deleting unnecessary libraries from bundled JRE." />
+								<delete verbose="true">
+									<fileset dir="${project.build.directory}/bundles/Cryptomator/runtime/lib/ext">
+										<include name="nashorn.jar" />
+									</fileset>
+									<fileset dir="${project.build.directory}/bundles/Cryptomator/runtime/bin">
+										<include name="jfxwebkit.dll" />
+									</fileset>
+								</delete>
 							</target>
 						</configuration>
 					</execution>
