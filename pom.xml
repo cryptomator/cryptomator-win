@@ -38,7 +38,7 @@
 						<executions>
 							<execution>
 								<id>copy-x86-dll</id>
-								<phase>prepare-package</phase>
+								<phase>process-resources</phase>
 								<goals>
 									<goal>copy</goal>
 								</goals>
@@ -88,7 +88,7 @@
 						<executions>
 							<execution>
 								<id>copy-x64-dll</id>
-								<phase>prepare-package</phase>
+								<phase>process-resources</phase>
 								<goals>
 									<goal>copy</goal>
 								</goals>
@@ -212,7 +212,7 @@
 										<fx:jvmarg value="-Xmx512m" />
 									</fx:platform>
 									<fx:resources>
-										<fx:fileset dir="." type="data" includes="logback.xml" />
+										<fx:fileset dir="${project.basedir}" type="data" includes="logback.xml" />
 										<fx:fileset dir="${project.build.directory}" type="jar" includes="Cryptomator-${project.version}.jar" />
 										<fx:fileset dir="${project.build.directory}/libs" type="jar" includes="*.jar" excludes="launcher-${cryptomator.launcher.version}.jar" />
 										<fx:fileset dir="${project.build.directory}/libs" type="data" includes="*.dll" />
@@ -235,7 +235,61 @@
 										<include name="nashorn.jar" />
 									</fileset>
 									<fileset dir="${project.build.directory}/bundles/Cryptomator/runtime/bin">
+										<include name="JAWTAccessBridge-64.dll" />
+										<include name="JavaAccessBridge-64.dll" />
+										<include name="WindowsAccessBridge-64.dll" />
+										<include name="attach.dll" />
+										<include name="bci.dll" />
+										<include name="dcpr.dll" />
+										<include name="decora_sse.dll" />
+										<include name="deploy.dll" />
+										<include name="dt_shmem.dll" />
+										<include name="dt_socket.dll" />
+										<include name="fxplugins.dll" />
+										<include name="glib-lite.dll" />
+										<include name="gstreamer-lite.dll" />
+										<include name="hprof.dll" />
+										<include name="instrument.dll" />
+										<include name="j2pcsc.dll" />
+										<include name="j2pkcs11.dll" />
+										<include name="jaas_nt.dll" />
+										<include name="java_crw_demo.dll" />
+										<include name="javafx_font_t2k.dll" />
+										<include name="javafx_iio.dll" />
+										<include name="jawt.dll" />
+										<include name="jdwp.dll" />
+										<include name="jfr.dll" />
+										<include name="jfxmedia.dll" />
 										<include name="jfxwebkit.dll" />
+										<include name="jli.dll" />
+										<include name="jpeg.dll" />
+										<include name="jsdt.dll" />
+										<include name="jsound.dll" />
+										<include name="jsoundds.dll" />
+										<include name="kcms.dll" />
+										<include name="lcms.dll" />
+										<include name="management.dll" />
+										<include name="mlib_image.dll" />
+										<include name="msvcp120.dll" />
+										<include name="msvcr100.dll" />
+										<include name="msvcr120.dll" />
+										<include name="npt.dll" />
+										<include name="prism_d3d.dll" />
+										<include name="resource.dll" />
+										<include name="sawindbg.dll" />
+										<include name="splashscreen.dll" />
+										<include name="sunec.dll" />
+										<include name="t2k.dll" />
+										<include name="unpack.dll" />
+										<include name="w2k_lsa_auth.dll" />
+									</fileset>
+									<fileset dir="${project.build.directory}/bundles/Cryptomator/runtime/bin/plugin2">
+										<include name="npjp2.dll" />
+										<include name="msvcr100.dll" />
+									</fileset>
+									<!-- TODO: x86 JVM has different dir layout... (client/classes.jsa?) -->
+									<fileset dir="${project.build.directory}/bundles/Cryptomator/runtime/bin/server">
+										<include name="classes.jsa" />
 									</fileset>
 								</delete>
 							</target>
