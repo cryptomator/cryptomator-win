@@ -49,7 +49,7 @@ Type: filesandordirs; Name: "{app}\runtime"
 Type: filesandordirs; Name: "{userappdata}\Cryptomator"
 
 [Files]
-Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion sign
 Source: "Cryptomator\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]

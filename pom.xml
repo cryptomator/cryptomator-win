@@ -55,6 +55,7 @@
 						<version>1.6.0</version>
 						<executions>
 							<execution>
+								<id>run-inno-setup-x86</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
@@ -105,6 +106,7 @@
 						<version>1.6.0</version>
 						<executions>
 							<execution>
+								<id>run-inno-setup-x64</id>
 								<phase>package</phase>
 								<goals>
 									<goal>exec</goal>
@@ -293,6 +295,25 @@
 									</fileset>
 								</delete>
 							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<id>remove-readonly-flags</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>attrib</executable>
+							<workingDirectory>${project.build.directory}/bundles/Cryptomator</workingDirectory>
+							<commandlineArgs>-r /s</commandlineArgs>
 						</configuration>
 					</execution>
 				</executions>
