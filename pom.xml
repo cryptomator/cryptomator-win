@@ -108,10 +108,7 @@
 									<fx:info title="Cryptomator" vendor="cryptomator.org" copyright="cryptomator.org" license="MIT" category="Utility">
 										<fx:association mimetype="application/x-vnd.cryptomator-vault-metadata" extension="cryptomator" description="Cryptomator Vault Metadata"/>
 									</fx:info>
-									<fx:runtime>
-										<fx:add-modules value="jdk.incubator.httpclient"/>
-									</fx:runtime>
-									<fx:platform javafx="2.2+" j2se="8.0">
+									<fx:platform j2se="9.0">
 										<fx:property name="logback.configurationFile" value="logback.xml"/>
 										<fx:property name="cryptomator.settingsPath" value="~/AppData/Roaming/Cryptomator/settings.json"/>
 										<fx:property name="cryptomator.keychainPath" value="~/AppData/Roaming/Cryptomator/keychain.json"/>
@@ -133,18 +130,14 @@
 					</execution>
 					<execution>
 						<id>cleanup-image</id>
-						<phase>prepare-package</phase>
+						<phase>process-classes</phase>
 						<goals>
 							<goal>run</goal>
 						</goals>
 						<configuration>
 							<target xmlns="antlib:org.apache.tools.ant">
-								<echo message="Deleting unnecessary libraries from bundled JRE."/>
-								<delete verbose="true">
-									<fileset dir="${project.build.directory}/bundles/Cryptomator/runtime/bin">
-										<include name="jfxwebkit.dll"/>
-									</fileset>
-								</delete>
+								<echo message="Deleting default runtime."/>
+								<delete dir="${project.build.directory}/bundles/Cryptomator/runtime"/>
 							</target>
 						</configuration>
 					</execution>
@@ -164,7 +157,34 @@
 						<configuration>
 							<executable>attrib</executable>
 							<workingDirectory>${project.build.directory}/bundles/Cryptomator</workingDirectory>
-							<commandlineArgs>-r /s</commandlineArgs>
+							<commandlineArgs>-r Cryptomator.exe</commandlineArgs>
+						</configuration>
+					</execution>
+					<execution>
+						<id>create-custom-runtime</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${java.home}/bin/jlink.exe</executable>
+							<workingDirectory>${project.build.directory}/bundles/Cryptomator</workingDirectory>
+							<longModulepath>false</longModulepath> <!-- fix for https://github.com/mojohaus/exec-maven-plugin/issues/75 -->
+							<arguments>
+								<argument>--module-path</argument>
+								<argument>${java.home}/jmods</argument>
+								<argument>--verbose</argument>
+								<argument>--compress</argument>
+								<argument>2</argument>
+								<argument>--no-header-files</argument>
+								<argument>--strip-debug</argument>
+								<argument>--no-man-pages</argument>
+								<argument>--strip-native-commands</argument>
+								<argument>--output</argument>
+								<argument>runtime</argument>
+								<argument>--add-modules</argument>
+								<argument>java.base,java.logging,java.xml,java.sql,java.management,java.security.sasl,java.naming,java.datatransfer,java.security.jgss,java.rmi,java.scripting,java.prefs,java.desktop,jdk.incubator.httpclient,javafx.fxml,javafx.controls,jdk.incubator.httpclient</argument>
+							</arguments>
 						</configuration>
 					</execution>
 					<execution>
