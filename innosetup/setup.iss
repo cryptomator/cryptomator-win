@@ -21,8 +21,8 @@ DisableWelcomePage=Yes
 DefaultGroupName=cryptomator.org
 ;Optional License
 LicenseFile=license.rtf
-;Vista or above
-MinVersion=6.0
+;Win7 SP1 or above
+MinVersion=6.1.7601
 OutputBaseFilename=Cryptomator-${project.version}-x64
 ;TODO
 Compression=lzma2/ultra
