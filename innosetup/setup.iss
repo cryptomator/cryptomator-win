@@ -25,7 +25,7 @@ LicenseFile=license.rtf
 MinVersion=6.0
 OutputBaseFilename=Cryptomator-${project.version}-x64
 ;TODO
-Compression=lzma
+Compression=lzma2/ultra
 SolidCompression=yes
 PrivilegesRequired=admin
 SetupIconFile=setup.ico
