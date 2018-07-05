@@ -1,7 +1,7 @@
 ;This file will be executed next to the application bundle image
 ;I.e. current directory will contain folder Cryptomator with application files
 [Setup]
-SignTool=default sign /sha1 BAF9137F110811A5251BEB9BD6A929C2CC73E19C /tr http://timestamp.comodoca.com /v /fd sha256 /d $qCryptomator$q $f
+SignTool=default sign /sha1 6FDEC9DFCFE59E6BAEE64B7ED97F00E120E70D97 /tr http://timestamp.comodoca.com /v /fd sha256 /d $qCryptomator$q $f
 AppId={{Cryptomator}}
 AppName=Cryptomator
 AppVersion=${project.version}
