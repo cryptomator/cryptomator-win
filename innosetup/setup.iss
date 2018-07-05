@@ -40,6 +40,10 @@ ArchitecturesInstallIn64BitMode=x64
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
 
+[Components]
+Name: "main"; Description: "Cryptomator"; Types: full compact custom; Flags: fixed
+Name: "dokan"; Description: "Dokan File System Driver"; Check: not FileExists(ExpandConstant('{sys}\drivers\dokan1.sys')); Types: full
+
 [Registry]
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; ValueType: dword; ValueName: "FileSizeLimitInBytes"; ValueData: "$ffffffff"
 
@@ -54,13 +58,13 @@ Type: filesandordirs; Name: "{userappdata}\Cryptomator"
 Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion sign
 Source: "Cryptomator\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "dlls\*"; DestDir: "{app}"; Flags: ignoreversion signonce
-Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression
+Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
 
 [Icons]
 Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{app}\Cryptomator.ico"
 
 [Run]
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan
 Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden
 Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; Flags: waituntilterminated runhidden
 Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
