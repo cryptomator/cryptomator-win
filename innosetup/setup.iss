@@ -4,8 +4,8 @@
 SignTool=default sign /sha1 6FDEC9DFCFE59E6BAEE64B7ED97F00E120E70D97 /tr http://timestamp.comodoca.com /v /fd sha256 /d $qCryptomator$q $f
 AppId={{Cryptomator}}
 AppName=Cryptomator
-AppVersion=${project.version}
-AppVerName=Cryptomator ${project.version}
+AppVersion={%CRYPTOMATOR_VERSION}
+AppVerName=Cryptomator {%CRYPTOMATOR_VERSION}
 AppPublisher=cryptomator.org
 AppCopyright=cryptomator.org
 AppPublisherURL=https://cryptomator.org/
@@ -23,7 +23,7 @@ DefaultGroupName=cryptomator.org
 LicenseFile=license.rtf
 ;Win7 SP1 or above
 MinVersion=6.1.7601
-OutputBaseFilename=Cryptomator-${project.version}-x64
+OutputBaseFilename=Cryptomator-{%CRYPTOMATOR_VERSION}-x64
 ;TODO
 Compression=lzma2/ultra
 SolidCompression=yes
