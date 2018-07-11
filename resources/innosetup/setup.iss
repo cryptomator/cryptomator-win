@@ -56,8 +56,8 @@ Type: filesandordirs; Name: "{userappdata}\Cryptomator"
 
 [Files]
 Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion sign
+Source: "Cryptomator\*.dll"; DestDir: "{app}"; Flags: ignoreversion signonce
 Source: "Cryptomator\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "dlls\*"; DestDir: "{app}"; Flags: ignoreversion signonce
 Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
 
 [Icons]

@@ -1,14 +1,14 @@
 param([string]$buildVersion = "continuous")
 
 # cleanup
-Remove-Item -Recurse -ErrorAction Ignore -Force antbuild, libs, antkit.zip, build.xml
+Remove-Item -Recurse -ErrorAction Ignore -Force antbuild, libs, build.xml
 
 # configure stuff
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # download ant (if not installed)
 if ((Get-Command "ant.exe" -ErrorAction SilentlyContinue) -eq $null) {
-	if (Test-Path "apache-ant-1.9.12" -eq $False) {
+	if (!(Test-Path "apache-ant-1.9.12")) {
 		Invoke-WebRequest "http://mirror.softaculous.com/apache//ant/binaries/apache-ant-1.9.12-bin.zip" -OutFile "ant.zip"
 		Expand-Archive -Path ant.zip -DestinationPath .
 	}
@@ -31,10 +31,11 @@ Expand-Archive -Path antkit.zip -DestinationPath .
   
 # adjust .app
 & 'attrib' -r './antbuild/Cryptomator/Cryptomator.exe'
-Copy-Item resources/app/logback.xml ./antbuild/Cryptomator/app
+Copy-Item resources/app/logback.xml ./antbuild/Cryptomator/app/
+Copy-Item resources/app/dlls/* ./antbuild/Cryptomator/
 
 # build installer
-Copy-Item -Recurse innosetup/* ./antbuild/
+Copy-Item -Recurse resources/innosetup/* ./antbuild/
 Set-Location ./antbuild
 $env:CRYPTOMATOR_VERSION = "$buildVersion"
 & 'C:\Program Files (x86)\Inno Setup 5\ISCC.exe' setup.iss '/sdefault="signtool $p"'
