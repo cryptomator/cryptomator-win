@@ -6,4 +6,6 @@ environment:
 
 build_script:
   - ps: Write-Host  $my_variable
-  - cmd: echo %my_variable%
+  - ps: Write-Host $env:my_variable
+  - ps: Write-Host $env
+  - ps: Write-Host hallo welt
