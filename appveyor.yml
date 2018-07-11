@@ -7,5 +7,6 @@ environment:
 build_script:
   - ps: Write-Host  $my_variable
   - ps: Write-Host $env:my_variable
-  - ps: Write-Host $env
+  - ps: $DecodedText = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($env:my_variable))
+  - ps: Write-Host $DecodedText
   - ps: Write-Host hallo welt
