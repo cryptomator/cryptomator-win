@@ -1,21 +1,27 @@
 param([string]$buildVersion = "continuous")
 
 # cleanup
-Remove-Item -Recurse -Force ant libs antkit.zip build.xml
+Remove-Item -Recurse -ErrorAction Ignore -Force antbuild, libs, antkit.zip, build.xml
 
-# download build dependencies
+# configure stuff
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-Invoke-WebRequest "http://mirror.softaculous.com/apache//ant/binaries/apache-ant-1.9.12-bin.zip" -OutFile "ant.zip"
-Expand-Archive -Path ant.zip -DestinationPath .
+
+# download ant (if not installed)
+if ((Get-Command "ant.exe" -ErrorAction SilentlyContinue) -eq $null) {
+	if (Test-Path "apache-ant-1.9.12" -eq $False) {
+		Invoke-WebRequest "http://mirror.softaculous.com/apache//ant/binaries/apache-ant-1.9.12-bin.zip" -OutFile "ant.zip"
+		Expand-Archive -Path ant.zip -DestinationPath .
+	}
+	$env:Path += ".\apache-ant-1.9.12\bin\";
+}
 
 # download and extract ant-kit
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Invoke-WebRequest "https://github.com/cryptomator/cryptomator/releases/download/$buildVersion/antkit.zip" -OutFile "antkit.zip"
 Expand-Archive -Path antkit.zip -DestinationPath .
 
 
 # build application directory
-.\apache-ant-1.9.12\bin\ant `
+& 'ant' `
   '-Dantbuild.logback.configurationFile="logback.xml"' `
   '-Dantbuild.cryptomator.settingsPath="~/AppData/Roaming/Cryptomator/settings.json"' `
   '-Dantbuild.cryptomator.ipcPortPath="~/AppData/Roaming/Cryptomator/ipcPort.bin"' `
