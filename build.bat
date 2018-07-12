@@ -1,1 +1,1 @@
-powershell -NoExit -ExecutionPolicy Unrestricted -Command .\build.ps1
+powershell -NoExit -ExecutionPolicy Unrestricted -Command .\build.ps1 "1.4.0-beta2"
