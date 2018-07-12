@@ -1,3 +1,7 @@
-/target/
-/.settings/
-.project
+# created during build
+antkit.zip
+ant.zip
+apache-ant-1.9.12/
+antbuild/
+build.xml
+libs/

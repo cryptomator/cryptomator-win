@@ -1,11 +1,13 @@
 ;This file will be executed next to the application bundle image
 ;I.e. current directory will contain folder Cryptomator with application files
 [Setup]
-SignTool=default sign /sha1 BAF9137F110811A5251BEB9BD6A929C2CC73E19C /tr http://timestamp.comodoca.com /v /fd sha256 /d $qCryptomator$q $f
+#define AppVersion GetEnv("CRYPTOMATOR_VERSION")
+#define FileInfoVersion GetFileVersion("Cryptomator/Cryptomator.exe")
+
+SignTool=default sign /sha1 6FDEC9DFCFE59E6BAEE64B7ED97F00E120E70D97 /tr http://timestamp.comodoca.com /v /fd sha256 /d $qCryptomator$q $f
 AppId={{Cryptomator}}
 AppName=Cryptomator
-AppVersion=${project.version}
-AppVerName=Cryptomator ${project.version}
+AppVersion={#AppVersion}
 AppPublisher=cryptomator.org
 AppCopyright=cryptomator.org
 AppPublisherURL=https://cryptomator.org/
@@ -21,22 +23,29 @@ DisableWelcomePage=Yes
 DefaultGroupName=cryptomator.org
 ;Optional License
 LicenseFile=license.rtf
-;Vista or above
-MinVersion=6.0
-OutputBaseFilename=Cryptomator-${project.version}-x86
+;Win7 SP1 or above
+MinVersion=6.1.7601
+OutputBaseFilename=Cryptomator-{#AppVersion}-x64
 ;TODO
-Compression=lzma
+Compression=lzma2/ultra
 SolidCompression=yes
 PrivilegesRequired=admin
 SetupIconFile=setup.ico
 UninstallDisplayIcon={app}\Cryptomator.ico
 UninstallDisplayName=Cryptomator
+VersionInfoVersion={#FileInfoVersion}
 WizardImageFile=setup-welcome.bmp
 WizardImageStretch=Yes
 WizardSmallImageFile=setup-banner-icon.bmp
+ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
+
+[Components]
+Name: "main"; Description: "Cryptomator"; Types: full compact custom; Flags: fixed
+Name: "dokan"; Description: "Dokan File System Driver"; Check: not FileExists(ExpandConstant('{sys}\drivers\dokan1.sys')); Types: full
 
 [Registry]
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; ValueType: dword; ValueName: "FileSizeLimitInBytes"; ValueData: "$ffffffff"
@@ -50,15 +59,18 @@ Type: filesandordirs; Name: "{userappdata}\Cryptomator"
 
 [Files]
 Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion sign
+Source: "Cryptomator\*.dll"; DestDir: "{app}"; Flags: ignoreversion signonce
 Source: "Cryptomator\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
 
 [Icons]
 Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{app}\Cryptomator.ico"
 
 [Run]
-Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan
 Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden
 Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; Flags: waituntilterminated runhidden
+Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
 
 [Code]
 const
