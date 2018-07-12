@@ -1,11 +1,13 @@
 ;This file will be executed next to the application bundle image
 ;I.e. current directory will contain folder Cryptomator with application files
 [Setup]
+#define AppVersion GetEnv("CRYPTOMATOR_VERSION")
+#define FileInfoVersion GetFileVersion("Cryptomator/Cryptomator.exe")
+
 SignTool=default sign /sha1 6FDEC9DFCFE59E6BAEE64B7ED97F00E120E70D97 /tr http://timestamp.comodoca.com /v /fd sha256 /d $qCryptomator$q $f
 AppId={{Cryptomator}}
 AppName=Cryptomator
-AppVersion=${project.version}
-AppVerName=Cryptomator ${project.version}
+AppVersion={#AppVersion}
 AppPublisher=cryptomator.org
 AppCopyright=cryptomator.org
 AppPublisherURL=https://cryptomator.org/
@@ -23,7 +25,7 @@ DefaultGroupName=cryptomator.org
 LicenseFile=license.rtf
 ;Win7 SP1 or above
 MinVersion=6.1.7601
-OutputBaseFilename=Cryptomator-${project.version}-x64
+OutputBaseFilename=Cryptomator-{#AppVersion}-x64
 ;TODO
 Compression=lzma2/ultra
 SolidCompression=yes
@@ -31,6 +33,7 @@ PrivilegesRequired=admin
 SetupIconFile=setup.ico
 UninstallDisplayIcon={app}\Cryptomator.ico
 UninstallDisplayName=Cryptomator
+VersionInfoVersion={#FileInfoVersion}
 WizardImageFile=setup-welcome.bmp
 WizardImageStretch=Yes
 WizardSmallImageFile=setup-banner-icon.bmp
@@ -56,8 +59,8 @@ Type: filesandordirs; Name: "{userappdata}\Cryptomator"
 
 [Files]
 Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion sign
+Source: "Cryptomator\*.dll"; DestDir: "{app}"; Flags: ignoreversion signonce
 Source: "Cryptomator\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "dlls\*"; DestDir: "{app}"; Flags: ignoreversion signonce
 Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
 
 [Icons]
