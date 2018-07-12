@@ -1,7 +1,8 @@
 ;This file will be executed next to the application bundle image
 ;I.e. current directory will contain folder Cryptomator with application files
 [Setup]
-#define AppVersion GetStringFileInfo("Cryptomator/Cryptomator.exe", PRODUCT_VERSION)
+#define AppVersion GetEnv("CRYPTOMATOR_VERSION")
+#define FileInfoVersion GetFileVersion("Cryptomator/Cryptomator.exe")
 
 SignTool=default sign /sha1 6FDEC9DFCFE59E6BAEE64B7ED97F00E120E70D97 /tr http://timestamp.comodoca.com /v /fd sha256 /d $qCryptomator$q $f
 AppId={{Cryptomator}}
@@ -32,6 +33,7 @@ PrivilegesRequired=admin
 SetupIconFile=setup.ico
 UninstallDisplayIcon={app}\Cryptomator.ico
 UninstallDisplayName=Cryptomator
+VersionInfoVersion={#FileInfoVersion}
 WizardImageFile=setup-welcome.bmp
 WizardImageStretch=Yes
 WizardSmallImageFile=setup-banner-icon.bmp
