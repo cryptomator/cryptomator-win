@@ -7,12 +7,8 @@ build_script:
   - ps: Write-Host $my_variable
   - ps: Write-Host $env:my_variable
   - ps: $env:my_variable | Set-Content geheim.base64
-  - ps: $env:my_variable > geheim.piped
   - ps: Get-Content -Path "geheim.base64"
-  - ps: Get-Content -Path "geheim.piped"
-  - cmd: dir
   - ps: C:\OpenSSL-Win32\bin\openssl.exe base64 -A -d -in geheim.base64 -out geheim.txt
   - ps: Get-Content -Path "geheim.txt"
-  - ps: $DecodedText = [System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String($env:my_variable))
-  - ps: Write-Host $DecodedText
   - ps: Write-Host hallo welt
+  - ps: .\build.ps1
