@@ -9,7 +9,7 @@ install:
   - cmd: echo %ANT_HOME%
   - ps: '[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12'
   - ps: 'Invoke-WebRequest "http://mirror.softaculous.com/apache/ant/binaries/apache-ant-1.9.12-bin.zip" -OutFile "ant.zip"'
-  - ps: 'Expand-Archive -Path ant.zip -DestinationPath "C:\Program Files"\'
+  - ps: 'Expand-Archive -Path ant.zip -DestinationPath "C:\Program Files"'
   - cmd: SET PATH=%ANT_HOME%\bin;%JAVA_HOME%\bin;%PATH%
 
 before_build:
