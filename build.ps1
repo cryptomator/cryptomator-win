@@ -1,4 +1,10 @@
-param([string]$buildVersion = "continuous")
+param(
+  [string]$buildVersion = "continuous",
+  [string]$signtool = "signtool sign /sha1 6FDEC9DFCFE59E6BAEE64B7ED97F00E120E70D97 `$p"
+)
+
+Write-Output "`$buildVersion=$buildVersion"
+Write-Output "`$signtool=$signtool"
 
 # cleanup
 Remove-Item -Recurse -ErrorAction Ignore -Force antbuild, libs, build.xml
@@ -51,4 +57,4 @@ Copy-Item resources/app/dlls/* ./antbuild/Cryptomator/
 Copy-Item -Recurse resources/innosetup/* ./antbuild/
 Set-Location ./antbuild
 $env:CRYPTOMATOR_VERSION = "$buildVersion"
-& 'C:\Program Files (x86)\Inno Setup 5\ISCC.exe' setup.iss '/sdefault="signtool $p"'
+& 'C:\Program Files (x86)\Inno Setup 5\ISCC.exe' setup.iss "/sdefault=`"$signtool`""
