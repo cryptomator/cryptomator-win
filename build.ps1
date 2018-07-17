@@ -57,4 +57,4 @@ Copy-Item resources/app/dlls/* ./antbuild/Cryptomator/
 Copy-Item -Recurse resources/innosetup/* ./antbuild/
 Set-Location ./antbuild
 $env:CRYPTOMATOR_VERSION = "$buildVersion"
-& 'C:\Program Files (x86)\Inno Setup 5\ISCC.exe' setup.iss "/sdefault=`"$signtool`""
+& 'C:\Program Files (x86)\Inno Setup 5\ISCC.exe' setup.iss /Qp "/sdefault=`"$signtool`""

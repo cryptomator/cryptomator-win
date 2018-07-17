@@ -4,7 +4,7 @@
 #define AppVersion GetEnv("CRYPTOMATOR_VERSION")
 #define FileInfoVersion GetFileVersion("Cryptomator/Cryptomator.exe")
 
-SignTool=default /tr http://timestamp.comodoca.com /v /fd sha256 /d $qCryptomator$q $f
+SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
 AppId={{Cryptomator}}
 AppName=Cryptomator
 AppVersion={#AppVersion}
