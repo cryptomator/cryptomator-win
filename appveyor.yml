@@ -5,6 +5,8 @@ environment:
   ANT_HOME: 'C:\Program Files\Ant'
 
 install:
+  - cmd: echo %JAVA_HOME%
+  - cmd: echo %ANT_HOME%
   - ps: '[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12'
   - ps: 'Invoke-WebRequest "http://mirror.softaculous.com/apache/ant/binaries/apache-ant-1.9.12-bin.zip" -OutFile "ant.zip"'
   - ps: 'Expand-Archive -Path ant.zip -DestinationPath $env.ANT_HOME\'
