@@ -12,3 +12,23 @@ build_script:
   - ps: Get-Content -Path "geheim.txt"
   - ps: Write-Host hallo welt
   - ps: .\build.ps1
+  - cmd: dir
+  - cmd: IF "%BuildVersion%"=="" (set BuildVersion=continuous)
+  - cmd: set BUILD_VERSION=%BuildVersion%
+  - cmd: set BUILD_VERSION
+  - cmd: set JAVA_HOME=C:\Progra~1\Java\jdk9
+  - cmd: set JAVA_HOME
+  - cmd: set ANTKIT_URL=http://github.com/cryptomator/cryptomator/releases/download/%BUILD_VERSION%/antkit.zip
+  - cmd: set ANTKIT_URL
+  - cmd: curl -o ant.zip http://mirror.synyx.de/apache//ant/binaries/apache-ant-1.10.4-bin.zip
+  - cmd: 7z  -oC:\projects\ant -aoa x ant.zip
+  - cmd: set ANT_HOME=C:\projects\ant\apache-ant-1.10.4
+  - cmd: C:\projects\ant\apache-ant-1.10.4\bin\ant.bat -version
+  - cmd: C:\Python33\python.exe -c "import urllib.request; import os; print(os.environ['ANTKIT_URL']); urllib.request.urlretrieve(os.environ['ANTKIT_URL'], 'antkit.zip')"
+  - cmd: 7z -aoa x antkit.zip
+  - cmd: C:\projects\ant\apache-ant-1.10.4\bin\ant.bat -Dantbuild.logback.configurationFile="logback.xml" -Dantbuild.cryptomator.settingsPath="~/AppData/Roaming/Cryptomator/settings.json" -Dantbuild.cryptomator.ipcPortPath="~/AppData/Roaming/Cryptomator/ipcPort.bin" -Dantbuild.cryptomator.keychainPath="~/AppData/Roaming/Cryptomator/keychain.json" -Dantbuild.dropinResourcesRoot="./resources/app" image
+  - cmd: dir
+  - cmd: robocopy C:\projects\cryptomator-win\innosetup C:\projects\cryptomator-win\antbuild /e
+  - cmd: cd ./antbuild
+  - cmd: set CRYPTOMATOR_VERSION=%BuildVersion%
+  - cmd: C:\Progra~2\Inno~1\ISCC.exe setup.iss '/sdefault="signtool $p"'
