@@ -1,7 +1,7 @@
 # created during build
 antkit.zip
 ant.zip
-apache-ant-1.9.12/
+apache-ant-*/
 antbuild/
 build.xml
 libs/

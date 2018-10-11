@@ -14,11 +14,11 @@ Remove-Item -Recurse -ErrorAction Ignore -Force antbuild, libs, build.xml
 
 # download ant (if not installed)
 if ((Get-Command "ant" -ErrorAction SilentlyContinue) -eq $null) {
-	if (!(Test-Path "apache-ant-1.9.12")) {
-		Invoke-WebRequest "http://mirror.softaculous.com/apache//ant/binaries/apache-ant-1.9.12-bin.zip" -OutFile "ant.zip"
+	if (!(Test-Path "apache-ant-1.10.5")) {
+		Invoke-WebRequest "https://archive.apache.org/dist/ant/binaries//apache-ant-1.10.5-bin.zip" -OutFile "ant.zip"
 		Expand-Archive -Path ant.zip -DestinationPath .
 	}
-	$env:Path += ".\apache-ant-1.9.12\bin\";
+	$env:Path += ".\apache-ant-1.10.5\bin\";
 }
 
 # download and extract ant-kit
