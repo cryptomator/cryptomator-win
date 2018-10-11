@@ -22,7 +22,7 @@ if ((Get-Command "ant" -ErrorAction SilentlyContinue) -eq $null) {
 }
 
 # download and extract ant-kit
-Invoke-WebRequest "https://github.com/cryptomator/cryptomator/releases/download/$buildVersion/antkit.zip" -OutFile "antkit.zip"
+Invoke-WebRequest "https://dl.bintray.com/cryptomator/cryptomator/antkit-${buildVersion}.zip" -OutFile "antkit.zip"
 Expand-Archive -Path antkit.zip -DestinationPath .
 
 
