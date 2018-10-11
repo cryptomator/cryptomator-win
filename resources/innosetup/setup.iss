@@ -14,13 +14,13 @@ AppPublisherURL=https://cryptomator.org/
 AppSupportURL=https://cryptomator.org/help/
 AppUpdatesURL=https://cryptomator.org/downloads/#winDownload
 DefaultDirName={pf}\Cryptomator
+DefaultGroupName=Cryptomator
 DisableStartupPrompt=Yes
 DisableDirPage=No
 DisableProgramGroupPage=Yes
 DisableReadyPage=Yes
 DisableFinishedPage=No
 DisableWelcomePage=Yes
-DefaultGroupName=cryptomator.org
 ;Optional License
 LicenseFile=license.rtf
 ;Win7 SP1 or above
