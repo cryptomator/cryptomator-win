@@ -18,7 +18,7 @@ if ((Get-Command "ant" -ErrorAction SilentlyContinue) -eq $null) {
 		Invoke-WebRequest "https://archive.apache.org/dist/ant/binaries//apache-ant-1.10.5-bin.zip" -OutFile "ant.zip"
 		Expand-Archive -Path ant.zip -DestinationPath .
 	}
-	$env:Path += ".\apache-ant-1.10.5\bin\";
+	$env:Path += ";.\apache-ant-1.10.5\bin\";
 }
 
 # download and extract ant-kit
