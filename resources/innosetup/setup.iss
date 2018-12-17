@@ -67,7 +67,7 @@ Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinsta
 Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{app}\Cryptomator.ico"
 
 [Run]
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; Check: DokanDependencyCheck
 Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden
 Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; Flags: waituntilterminated runhidden
 Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
@@ -77,6 +77,26 @@ const
   RegNetworkProviderOrderSubkey = 'SYSTEM\CurrentControlSet\Control\NetworkProvider\Order';
   RegProviderOrderValueName = 'ProviderOrder';
   RegWebClientValue = 'webclient';
+  RegVcRedistKey = 'SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64';
+
+function DokanDependencyCheck(): Boolean;
+var
+  major, minor, build: Cardinal;
+begin
+  Result := False;
+  if RegKeyExists(HKEY_LOCAL_MACHINE, RegVcRedistKey) then
+  begin
+    if RegQueryDWordValue(HKEY_LOCAL_MACHINE, RegVcRedistKey, 'Major', major) and RegQueryDWordValue(HKEY_LOCAL_MACHINE, RegVcRedistKey, 'Minor', minor) and RegQueryDWordValue(HKEY_LOCAL_MACHINE, RegVcRedistKey, 'Bld', build) then
+	begin
+      // Version info was found. Return true if later or equal to our 14.11.25325
+      Result := (major >= 14) and (minor >= 11) and (build >= 25325)
+    end;   
+  end;
+  if not Result then
+  begin
+    MsgBox('The Dokan driver requires you to install Microsoft Visual C++ Redistributable 2017. Cryptomator installation will continue, but you will not be able to use Dokan-based drives.', mbInformation, MB_OK);
+  end;
+end;
 
 function StrSplit(Text: String; Separator: String): TArrayOfString;
 var
