@@ -8,11 +8,26 @@ $buildDir = Split-Path -Parent $PSCommandPath
 Write-Output "`$buildVersion=$buildVersion"
 Write-Output "`$signtool=$signtool"
 Write-Output "`$buildDir=$buildDir"
-Write-Output "`$env:JAVA_HOME=$env:JAVA_HOME"
+Write-Output "`$Env:JAVA_HOME=$Env:JAVA_HOME"
 
 
-if (-not (Test-Path env:JAVA_HOME)) {
-    Write-Output "JAVA_HOME not set."
+if (-not (Test-Path $Env:JAVA_HOME)) {
+    Write-Output "JAVA_HOME not set or does not exist: $Env:JAVA_HOME"
+    exit 1;
+}
+
+if(-not (Test-Path $Env:JAVA_HOME\jmods\jdk.packager.jar)){
+    Write-Output "$Env:JAVA_HOME\jmods\jdk.packager.jar does not exist. You need to patch your JDK installation with the jar provided under ./tools"
+    exit 1;
+}
+
+if(-not (Test-Path $Env:JAVA_HOME\bin\jdk.packager.jar)){
+    Write-Output "$Env:JAVA_HOME\bin\jdk.packager.jar does not exist. You need to patch your JDK installation with the jar provided under ./tools"
+    exit 1;
+}
+
+if(-not (Test-Path $Env:JAVA_HOME\bin\jpackager.exe)){
+    Write-Output "$Env:JAVA_HOME\bin\jpackager.exe does not exist. You need to patch your JDK installation with the exe provided under ./tools"
     exit 1;
 }
 
@@ -22,16 +37,12 @@ if (-not (Test-Path env:JAVA_HOME)) {
 # configure stuff
 #[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# download and extract ant-kit
-#Invoke-WebRequest "https://dl.bintray.com/cryptomator/cryptomator/antkit-${buildVersion}.zip" -OutFile "antkit.zip"
-#Expand-Archive -Path antkit.zip -DestinationPath .
+# download and extract build-kit
+#Invoke-WebRequest "https://dl.bintray.com/cryptomator/cryptomator/buildkit-${buildVersion}.zip" -OutFile "buildkit.zip"
+#Expand-Archive -Path buildkit.zip -DestinationPath .
 
 # create application dir
-& "$Env:JAVA_HOME\bin\java" `
-  -Xmx512M `
-  --module-path `"$buildDir\tools\packager`" `
-  --add-opens jdk.jlink/jdk.tools.jlink.internal.packager=jdk.packager `
-  --module jdk.packager/jdk.packager.Main `
+& "$Env:JAVA_HOME\bin\jpackager" `
   create-image `
   --verbose `
   --echo-mode `
@@ -40,6 +51,7 @@ if (-not (Test-Path env:JAVA_HOME)) {
   --name Cryptomator `
   --class org.cryptomator.launcher.Cryptomator `
   --main-jar launcher-$buildVersion.jar `
+  --icon resources/app/Cryptomator.ico `
   --jvm-args "-Dantbuild.logback.configurationFile=`"logback.xml`"" `
   --jvm-args "-Dantbuild.cryptomator.settingsPath=`"~/AppData/Roaming/Cryptomator/settings.json`"" `
   --jvm-args "-Dantbuild.cryptomator.ipcPortPath=`"~/AppData/Roaming/Cryptomator/ipcPort.bin`"" `

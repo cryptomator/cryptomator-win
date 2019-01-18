@@ -1,7 +1,5 @@
 # created during build
-antkit.zip
-ant.zip
-apache-ant-*/
-antbuild/
+buildkit.zip
 build.xml
 libs/
+app/

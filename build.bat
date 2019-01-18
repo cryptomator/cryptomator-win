@@ -1,2 +1,2 @@
-set JAVA_HOME=C:\Program Files\Java\jdk-11.0.1
+set JAVA_HOME=C:\Program Files\Java\jdk-11.0.2
 powershell -NoExit -ExecutionPolicy Unrestricted -Command .\build.ps1 -buildVersion '1.4.2' -signtool 'signtool sign /sha1 6FDEC9DFCFE59E6BAEE64B7ED97F00E120E70D97 $p'
