@@ -1,5 +1,5 @@
 # created during build
-buildkit.zip
-build.xml
-libs/
-app/
+/buildkit.zip
+/build.xml
+/libs/
+/app/
