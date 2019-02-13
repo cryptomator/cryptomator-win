@@ -31,6 +31,11 @@ if(-not (Test-Path $Env:JAVA_HOME\bin\jpackager.exe)){
     exit 1;
 }
 
+if(-not (Test-Path "C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe")){
+    Write-Output "C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe does not exist. Please install from http://www.angusj.com/resourcehacker."
+    exit 1;
+}
+
 # cleanup
 Remove-Item -Recurse -ErrorAction Ignore -Force buildkit.zip, app, libs
 
@@ -66,6 +71,16 @@ Expand-Archive -Path buildkit.zip -DestinationPath .
 
 # adjust .app
 & 'attrib' -r 'app/Cryptomator/Cryptomator.exe'
+& 'C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe' `
+  -open "resources\resourcehacker\cryptomator.rc" `
+  -save "resources\resourcehacker\cryptomator.res" `
+  -action compile
+& 'C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe' `
+  -open "app\Cryptomator\Cryptomator.exe" `
+  -resource "resources\resourcehacker\cryptomator.res" `
+  -save "app\Cryptomator\Cryptomator.exe" `
+  -action modify `
+  -mask ",,,"
 Copy-Item resources/app/logback.xml app/Cryptomator/app/
 Copy-Item resources/app/dlls/* app/Cryptomator/
 
