@@ -57,7 +57,7 @@ Expand-Archive -Path buildkit.zip -DestinationPath .
   --class org.cryptomator.launcher.Cryptomator `
   --main-jar launcher-$buildVersion.jar `
   --icon resources/app/Cryptomator.ico `
-  --jvm-args "-Dlogback.configurationFile=`"logback.xml`"" `
+  --jvm-args "-Dcryptomator.logDir=`"~/AppData/Roaming/Cryptomator`"" `
   --jvm-args "-Dcryptomator.settingsPath=`"~/AppData/Roaming/Cryptomator/settings.json`"" `
   --jvm-args "-Dcryptomator.ipcPortPath=`"~/AppData/Roaming/Cryptomator/ipcPort.bin`"" `
   --jvm-args "-Dcryptomator.keychainPath=`"~/AppData/Roaming/Cryptomator/keychain.json`"" `
@@ -81,7 +81,6 @@ Expand-Archive -Path buildkit.zip -DestinationPath .
   -save "app\Cryptomator\Cryptomator.exe" `
   -action modify `
   -mask ",,,"
-Copy-Item resources/app/logback.xml app/Cryptomator/app/
 Copy-Item resources/app/dlls/* app/Cryptomator/
 
 # build installer
