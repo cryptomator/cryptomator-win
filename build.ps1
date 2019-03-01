@@ -10,7 +10,6 @@ Write-Output "`$signtool=$signtool"
 Write-Output "`$buildDir=$buildDir"
 Write-Output "`$Env:JAVA_HOME=$Env:JAVA_HOME"
 
-
 if (-not (Test-Path $Env:JAVA_HOME)) {
     Write-Output "JAVA_HOME not set or does not exist: $Env:JAVA_HOME"
     exit 1;
@@ -42,9 +41,16 @@ Remove-Item -Recurse -ErrorAction Ignore -Force buildkit.zip, app, libs
 # configure stuff
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# download and extract build-kit
-Invoke-WebRequest "https://dl.bintray.com/cryptomator/cryptomator/buildkit-${buildVersion}.zip" -OutFile "buildkit.zip"
+# download and extract buildkit
+$buildkitUrl = "https://dl.bintray.com/cryptomator/cryptomator/${buildVersion}/buildkit-win.zip"
+$wc = New-Object System.Net.WebClient
+Write-Output "Downloading ${buildkitUrl}..."
+$wc.Downloadfile($buildkitUrl, "buildkit.zip")
 Expand-Archive -Path buildkit.zip -DestinationPath .
+if (-not (Test-Path libs)) {
+    Write-Output "libs/ does not exist. Buildkit damaged?"
+    exit 1;
+}
 
 # create application dir
 & "$Env:JAVA_HOME\bin\jpackager" `
