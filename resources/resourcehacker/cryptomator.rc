@@ -1,0 +1,33 @@
+#define VER_FILEVERSION             1,4,3,0
+#define VER_FILEVERSION_STR         "1.4.3.0\0"
+
+#define VER_PRODUCTVERSION          1,4,3,0
+#define VER_PRODUCTVERSION_STR      "1.4.3\0"
+
+1 VERSIONINFO
+FILEVERSION     VER_FILEVERSION
+PRODUCTVERSION  VER_PRODUCTVERSION
+FILEOS          VOS__WINDOWS32
+FILETYPE        VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "CompanyName",      "Skymatic UG (haftungsbeschränkt)"
+            VALUE "FileDescription",  "Cryptomator"
+            VALUE "FileVersion",      VER_FILEVERSION_STR
+			VALUE "Full Version",     VER_FILEVERSION_STR
+            VALUE "InternalName",     "Cryptomator"
+            VALUE "LegalCopyright",   "Copyright \xA9 2019 Skymatic UG (haftungsbeschränkt)"
+            VALUE "OriginalFilename", "Cryptomator.exe"
+            VALUE "ProductName",      "Cryptomator"
+            VALUE "ProductVersion",   VER_PRODUCTVERSION_STR
+        END
+    END
+
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0000, 1200
+    END
+END
