@@ -1,6 +1,6 @@
 param(
   [string]$buildVersion = "continuous",
-  [string]$signtool = "signtool sign /sha1 6FDEC9DFCFE59E6BAEE64B7ED97F00E120E70D97 `$p"
+  [string]$signtool = "signtool sign /sha1 FF52240075AD7D14AF25629FDF69635357C7D14B `$p"
 )
 
 $buildDir = Split-Path -Parent $PSCommandPath
