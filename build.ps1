@@ -46,7 +46,7 @@ $buildkitUrl = "https://dl.bintray.com/cryptomator/cryptomator/${buildVersion}/b
 $wc = New-Object System.Net.WebClient
 Write-Output "Downloading ${buildkitUrl}..."
 $wc.Downloadfile($buildkitUrl, "buildkit.zip")
-Expand-Archive -Path buildkit.zip -DestinationPath .
+Expand-Archive -Path buildkit.zip -DestinationPath . -Force
 if (-not (Test-Path libs)) {
     Write-Output "libs/ does not exist. Buildkit damaged?"
     exit 1;
