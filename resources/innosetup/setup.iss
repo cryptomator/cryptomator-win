@@ -5,7 +5,7 @@
 #define FileInfoVersion GetFileVersion("Cryptomator/Cryptomator.exe")
 
 SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
-AppId={{Cryptomator}}
+AppId=Cryptomator
 AppName=Cryptomator
 AppVersion={#AppVersion}
 AppPublisher=cryptomator.org
@@ -37,6 +37,7 @@ VersionInfoVersion={#FileInfoVersion}
 WizardImageFile=setup-welcome.bmp
 WizardImageStretch=Yes
 WizardSmallImageFile=setup-banner-icon.bmp
+WizardStyle=classic
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 
@@ -45,7 +46,8 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [Components]
 Name: "main"; Description: "Cryptomator"; Types: full compact custom; Flags: fixed
-Name: "dokan"; Description: "Dokan File System Driver"; Check: not FileExists(ExpandConstant('{sys}\drivers\dokan1.sys')); Types: full
+Name: "dokan"; Description: "Dokan File System Driver"; Types: full; Flags: disablenouninstallwarning
+Name: "webdav"; Description: "WebDAV system configuration"; Types: full compact; ExtraDiskSpaceRequired: 50; Flags: disablenouninstallwarning
 
 [Registry]
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; ValueType: dword; ValueName: "FileSizeLimitInBytes"; ValueData: "$ffffffff"
@@ -58,18 +60,20 @@ Type: filesandordirs; Name: "{app}\runtime"
 Type: filesandordirs; Name: "{userappdata}\Cryptomator"
 
 [Files]
-Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion sign
+Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion sign;
 Source: "Cryptomator\*.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs signonce
 Source: "Cryptomator\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
+Source: "vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
 
 [Icons]
 Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{app}\Cryptomator.ico"
 
 [Run]
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; Check: DokanDependencyCheck
-Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden
-Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; Flags: waituntilterminated runhidden
+Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/norestart /q /chainingpackage ADMINDEPLOYMENT"; StatusMsg: "Installing VC++ Redistributable 2019..."; Flags: waituntilterminated; Components: dokan; Check: not VCRedistInstalled
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; Check: not FileExists(ExpandConstant('{sys}\drivers\dokan1.sys'))
+Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden; Components: webdav
+Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; BeforeInstall: PrepareForWebDAV; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
 
 [Code]
@@ -77,26 +81,7 @@ const
   RegNetworkProviderOrderSubkey = 'SYSTEM\CurrentControlSet\Control\NetworkProvider\Order';
   RegProviderOrderValueName = 'ProviderOrder';
   RegWebClientValue = 'webclient';
-  RegVcRedistKey = 'SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64';
-
-function DokanDependencyCheck(): Boolean;
-var
-  major, minor, build: Cardinal;
-begin
-  Result := False;
-  if RegKeyExists(HKEY_LOCAL_MACHINE, RegVcRedistKey) then
-  begin
-    if RegQueryDWordValue(HKEY_LOCAL_MACHINE, RegVcRedistKey, 'Major', major) and RegQueryDWordValue(HKEY_LOCAL_MACHINE, RegVcRedistKey, 'Minor', minor) and RegQueryDWordValue(HKEY_LOCAL_MACHINE, RegVcRedistKey, 'Bld', build) then
-	begin
-      // Version info was found. Return true if later or equal to our 14.11.25325
-      Result := (major >= 14) and (minor >= 11) and (build >= 25325)
-    end;   
-  end;
-  if not Result then
-  begin
-    MsgBox('The Dokan driver requires you to install Microsoft Visual C++ Redistributable 2017. Cryptomator installation will continue, but you will not be able to use Dokan-based drives.', mbInformation, MB_OK);
-  end;
-end;
+  RegVcRedistKey = 'SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14';
 
 function StrSplit(Text: String; Separator: String): TArrayOfString;
 var
@@ -120,6 +105,42 @@ begin
     end;
   until Length(Text) = 0;
   Result := Dest
+end;
+
+function VCRedistInstalled(): Boolean;
+var
+  VersionString: String;
+  Version: TArrayOfString;
+  MajorVersion, MinorVersion, BuildVersion: Integer;
+  FoundRequiredVersion: Boolean;
+begin
+  Result := False;
+  if RegKeyExists(HKEY_LOCAL_MACHINE, RegVcRedistKey) then
+  begin
+    if RegQueryStringValue(HKEY_LOCAL_MACHINE, RegVcRedistKey, 'Version', VersionString)then
+	begin
+	  Version := StrSplit(VersionString, '.');
+	  if GetArrayLength(Version) >= 3 then
+	  begin
+	    MajorVersion := StrToIntDef(Version[0], 0);
+		MinorVersion := StrToIntDef(Version[1], 0);
+		BuildVersion := StrToIntDef(Version[2], 0);
+		if (MajorVersion > 14) then
+		begin
+		  FoundRequiredVersion := true;
+		end
+		else if (MajorVersion = 14) and (MinorVersion > 21) then
+		begin
+		  FoundRequiredVersion := true;
+		end
+		else if (MajorVersion = 14) and (MinorVersion = 21) and (BuildVersion >= 27702) then
+		begin
+		  FoundRequiredVersion := true;
+		end;
+	  end;
+    end;   
+  end;
+  Result := FoundRequiredVersion;
 end;
 
 procedure PatchProviderOrderRegValue();
@@ -176,6 +197,12 @@ begin
   end;
 end;
 
+procedure PrepareForWebDAV();
+begin
+  PatchHostsFile();
+  PatchProviderOrderRegValue();
+end;
+
 function InitializeSetup(): Boolean;
 begin
 // Possible future improvements:
@@ -183,11 +210,4 @@ begin
 //   if upgrade => check if same app is running and wait for it to exit
 //   Add pack200/unpack200 support?
   Result := true;
-end;
-
-function PrepareToInstall(var NeedsRestart: Boolean): String;
-begin
-  PatchHostsFile();
-  PatchProviderOrderRegValue();
-  Result := '';
 end;
