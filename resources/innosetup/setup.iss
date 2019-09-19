@@ -56,9 +56,6 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; Va
 Type: filesandordirs; Name: "{app}\app"
 Type: filesandordirs; Name: "{app}\runtime"
 
-[UninstallDelete]
-Type: filesandordirs; Name: "{userappdata}\Cryptomator"
-
 [Files]
 Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion sign;
 Source: "Cryptomator\*.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs signonce
