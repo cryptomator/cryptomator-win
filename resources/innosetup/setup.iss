@@ -13,6 +13,7 @@ AppCopyright=cryptomator.org
 AppPublisherURL=https://cryptomator.org/
 AppSupportURL=https://cryptomator.org/support/
 AppUpdatesURL=https://cryptomator.org/downloads/#winDownload
+ChangesAssociations=Yes
 DefaultDirName={pf}\Cryptomator
 DefaultGroupName=Cryptomator
 DisableStartupPrompt=Yes
@@ -51,6 +52,10 @@ Name: "webdav"; Description: "WebDAV system configuration"; Types: full compact;
 
 [Registry]
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; ValueType: dword; ValueName: "FileSizeLimitInBytes"; ValueData: "$ffffffff"
+Root: HKCR; Subkey: ".cryptomator"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorMasterkeyFile"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "CryptomatorMasterkeyFile"; ValueType: string;  ValueName: ""; ValueData: "Cryptomator Masterkey File"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "CryptomatorMasterkeyFile\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
+Root: HKCR; Subkey: "CryptomatorMasterkeyFile\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Cryptomator.exe"" ""%1"""
 
 [InstallDelete]
 Type: filesandordirs; Name: "{app}\app"
