@@ -72,7 +72,7 @@ if (-not (Test-Path libs)) {
   --identifier org.cryptomator `
   --version $buildVersion `
   --module-path `"$Env:JAVA_HOME\jmods`" `
-  --add-modules java.base,java.logging,java.xml,java.sql,java.management,java.security.sasl,java.naming,java.datatransfer,java.security.jgss,java.rmi,java.scripting,java.prefs,java.desktop,jdk.unsupported `
+  --add-modules java.base,java.logging,java.xml,java.sql,java.management,java.security.sasl,java.naming,java.datatransfer,java.security.jgss,java.rmi,java.scripting,java.prefs,java.desktop,jdk.unsupported,java.net.http,jdk.crypto.ec `
   --strip-native-commands
 
 # adjust .app
