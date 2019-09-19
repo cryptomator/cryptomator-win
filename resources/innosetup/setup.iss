@@ -38,7 +38,7 @@ VersionInfoVersion={#FileInfoVersion}
 WizardImageFile=setup-welcome.bmp
 WizardImageStretch=Yes
 WizardSmallImageFile=setup-banner-icon.bmp
-WizardStyle=classic
+WizardStyle=modern
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 
