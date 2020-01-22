@@ -73,7 +73,7 @@ Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{
 
 [Run]
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/norestart /q /chainingpackage ADMINDEPLOYMENT"; StatusMsg: "Installing VC++ Redistributable 2019..."; Flags: waituntilterminated; Components: dokan; Check: not VCRedistInstalled
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; Check: not FileExists(ExpandConstant('{sys}\drivers\dokan1.sys'))
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; 
 Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; BeforeInstall: PrepareForWebDAV; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
@@ -84,6 +84,8 @@ const
   RegProviderOrderValueName = 'ProviderOrder';
   RegWebClientValue = 'webclient';
   RegVcRedistKey = 'SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14';
+  DokanNameCheck = 'Dokan Library';
+  BundledDokanVersion = '1.3.0.1000';
 
 function StrSplit(Text: String; Separator: String): TArrayOfString;
 var
@@ -204,6 +206,59 @@ begin
   PatchHostsFile();
   PatchProviderOrderRegValue();
 end;
+
+
+function oldDokanVersionDetected(): Boolean;   //TODO: Use the dll function loading ability of inno setup
+var
+  I: Integer;
+  Names: TArrayOfString;
+  TempRegKey: String;
+  TempRegValueName: String;
+  TmpNameCheck: String;
+  InstalledDokanVersion: String;
+  FoundEntry: Boolean;
+  DebugString: String;
+begin
+  Result := False;
+  TempRegValueName := '';
+  FoundEntry := False;
+  if RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', Names) then
+  begin
+    for I := 0 to GetArrayLength(Names) - 1 do
+    begin
+      TempRegKey := 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\'+Names[I];
+      if (RegQueryStringValue(HKEY_LOCAL_MACHINE, TempRegKey, 'DisplayName', TempRegValueName)) then
+      begin
+        TmpNameCheck := Copy(TempRegValueName,1,Length(DokanNameCheck))
+        if(CompareStr(TmpNameCheck,DokanNameCheck) = 0) then 
+        begin
+          //We found it!
+          if (RegQueryStringValue(HKEY_LOCAL_MACHINE, TempRegKey, 'FullVersion', InstalledDokanVersion)) then
+          begin
+             Result := (CompareText(InstalledDokanVersion, BundledDokanVersion) < 0);
+             MsgBox('We detected an older Dokany version on your system. Please uninstall it first and continue afterwards with this installation.', mbInformation, MB_OK);
+             FoundEntry := True;
+          end;
+        end;
+      end;
+      if FoundEntry = True then
+      begin
+          break;
+      end;
+    end;
+  end;
+end;
+
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  Result := True;
+  if CurPageID = wpSelectComponents then
+  begin
+    Result := not( IsComponentSelected('dokan') and oldDokanVersionDetected());
+  end;
+end;
+
 
 function InitializeSetup(): Boolean;
 begin
