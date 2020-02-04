@@ -3,6 +3,7 @@
 [Setup]
 #define AppVersion GetEnv("CRYPTOMATOR_VERSION")
 #define FileInfoVersion GetFileVersion("Cryptomator/Cryptomator.exe")
+#define BundledDokanVersion GetEnv("DOKAN_VERSION")
 
 SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
 AppId=Cryptomator
@@ -85,7 +86,7 @@ const
   RegWebClientValue = 'webclient';
   RegVcRedistKey = 'SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14';
   DokanNameCheck = 'Dokan Library';
-  BundledDokanVersion = '1.3.0.1000';
+  BundledDokanVersion = '{#BundledDokanVersion}';
 
 function StrSplit(Text: String; Separator: String): TArrayOfString;
 var
@@ -236,7 +237,7 @@ begin
           if (RegQueryStringValue(HKEY_LOCAL_MACHINE, TempRegKey, 'FullVersion', InstalledDokanVersion)) then
           begin
              Result := (CompareText(InstalledDokanVersion, BundledDokanVersion) < 0);
-             MsgBox('We detected an older Dokany version on your system. Please uninstall it first and continue afterwards with this installation.', mbInformation, MB_OK);
+             if (Result) then begin MsgBox('We detected an older Dokany version on your system. Please uninstall it first and do a reboot. Afterwards continue with the installation.', mbInformation, MB_OK); end;
              FoundEntry := True;
           end;
         end;
