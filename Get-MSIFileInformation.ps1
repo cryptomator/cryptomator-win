@@ -9,11 +9,10 @@ param(
     [string]$Property
 )
 Process {
-    if(! [System.IO.Path]::IsPathFullyQualified($Path)){
-        $invocation = (Get-Variable MyInvocation).Value
-        $directorypath = Split-Path $invocation.MyCommand.Path
-        [System.IO.Directory]::SetCurrentDirectory($directorypath)
-    }
+    $invocation = (Get-Variable MyInvocation).Value
+    $directorypath = Split-Path $invocation.MyCommand.Path
+    [System.IO.Directory]::SetCurrentDirectory($directorypath)
+
     try {
         # Read property from MSI database
         $WindowsInstaller = New-Object -ComObject WindowsInstaller.Installer

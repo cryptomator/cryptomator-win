@@ -93,5 +93,5 @@ Copy-Item resources/app/dlls/* app/Cryptomator/
 Copy-Item -Recurse resources/innosetup/* app/
 Set-Location app/
 $env:CRYPTOMATOR_VERSION = "$buildVersion"
-$env:DOKAN_VERSION = & $PSScriptRoot"\MSIFileInformation.ps1" .\resources\innosetup\Dokan_x64.msi "ProductVersion"
+$env:DOKAN_VERSION = & $PSScriptRoot"\Get-MSIFileInformation.ps1" .\resources\innosetup\Dokan_x64.msi "ProductVersion"
 & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' setup.iss /Qp "/sdefault=`"$signtool`""

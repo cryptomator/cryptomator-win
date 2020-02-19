@@ -236,7 +236,7 @@ begin
           //We found it!
           if (RegQueryStringValue(HKEY_LOCAL_MACHINE, TempRegKey, 'FullVersion', InstalledDokanVersion)) then
           begin
-             Result := (CompareText(InstalledDokanVersion, BundledDokanVersion) < 0);
+             Result := (CompareText(Trim(InstalledDokanVersion), Trim(BundledDokanVersion)) < 0);
              if (Result) then begin MsgBox('We detected an older Dokany version on your system. Please uninstall it first and do a reboot. Afterwards continue with the installation.', mbInformation, MB_OK); end;
              FoundEntry := True;
           end;
