@@ -35,6 +35,7 @@ PrivilegesRequired=admin
 SetupIconFile=setup.ico
 UninstallDisplayIcon={app}\Cryptomator.ico
 UninstallDisplayName=Cryptomator
+UsePreviousSetupType=Yes
 VersionInfoVersion={#FileInfoVersion}
 WizardImageFile=setup-welcome.bmp
 WizardImageStretch=Yes
@@ -42,6 +43,7 @@ WizardSmallImageFile=setup-banner-icon.bmp
 WizardStyle=modern
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
+AlwaysShowComponentsList=Yes
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
@@ -215,8 +217,8 @@ begin
   PatchProviderOrderRegValue();
 end;
 
-
-function oldDokanVersionDetected(): Boolean;   //TODO: Use the dll function loading ability of inno setup
+// Detects over the registry if an old version of Dokany is installed. Returns true if this is the case.
+function oldDokanVersionDetected(): Boolean;
 var
   I: Integer;
   Names: TArrayOfString;
@@ -263,6 +265,7 @@ begin
   Result := True;
   if CurPageID = wpSelectComponents then
   begin
+    // blocks installation if old dokan version is detected
     Result := not( IsComponentSelected('dokan') and oldDokanVersionDetected());
   end;
 end;
@@ -275,4 +278,45 @@ begin
 //   if upgrade => check if same app is running and wait for it to exit
 //   Add pack200/unpack200 support?
   Result := true;
+end;
+
+//Alters some registry installer values for Cryptomator, depending if Dokan is already present on this computer or not
+procedure InitializeWizard();
+var
+  DokanDriverLocation : String;
+  SetupType : String;
+  SelectedComponents : String;
+  ComponentsLength: Integer;
+begin
+  //check if Dokan is installed
+  DokanDriverLocation := ExpandConstant('{sys}\drivers\dokan1.sys');
+  if FileExists(DokanDriverLocation) then
+  begin
+    if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1', 'Inno Setup: Setup Type', SetupType) then
+    begin
+      if CompareText('compact', Trim(SetupType))=0 then
+      begin
+        RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1', 'Inno Setup: Setup Type', 'full');
+      end;
+    end;
+
+    if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1', 'Inno Setup: Selected Components', SelectedComponents ) then
+    begin
+      SelectedComponents := Trim(SelectedComponents);
+      ComponentsLength := Length(SelectedComponents);
+      if Pos('dokan', SelectedComponents)=0 then
+      begin
+        if SelectedComponents[ComponentsLength] = ',' then
+        begin
+          Insert('dokan', SelectedComponents, ComponentsLength+1);
+        end
+        else
+        begin
+          Insert(',dokan', SelectedComponents, ComponentsLength+1);
+        end;
+          RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1', 'Inno Setup: Selected Components', SelectedComponents)
+      end;
+    end;
+    //no error handling
+  end;
 end;
