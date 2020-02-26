@@ -48,8 +48,15 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [Components]
 Name: "main"; Description: "Cryptomator"; Types: full compact custom; Flags: fixed
-Name: "dokan"; Description: "Dokan File System Driver"; Types: full; Flags: disablenouninstallwarning
+;Due to bug reports in the forum we force a restart after installing dokany
+Name: "dokan"; Description: "Dokan File System Driver"; Types: full dokan; Flags: disablenouninstallwarning restart
 Name: "webdav"; Description: "WebDAV system configuration"; Types: full compact; ExtraDiskSpaceRequired: 50; Flags: disablenouninstallwarning
+
+[Types]
+Name: "full"; Description:"Full Installation"
+Name: "custom"; Description:"Custom Installation"; Flags: iscustom
+Name: "compact"; Description:"Installation without third party software"
+Name: "dokan"; Description:"Installation of Cryptomator and Dokany"
 
 [Registry]
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; ValueType: dword; ValueName: "FileSizeLimitInBytes"; ValueData: "$ffffffff"; Components: webdav
