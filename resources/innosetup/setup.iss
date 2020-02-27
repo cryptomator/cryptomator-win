@@ -280,14 +280,14 @@ begin
     WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (Already Installed)';
     WizardForm.ComponentsList.Checked[1] := false;
     Wizardform.ComponentsList.ItemEnabled[1] := false;
-	
-	// ... unless it is an old version:
-	if OldDokanVersionDetected() then
-	begin
-	  WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (Update Required)';
+    
+    // ... unless it is an old version:
+    if OldDokanVersionDetected() then
+    begin
+      WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (Update Required)';
       WizardForm.ComponentsList.Checked[1] := true;
       Wizardform.ComponentsList.ItemEnabled[1] := true;
-	end;
+    end;
   end;
 end;
 
