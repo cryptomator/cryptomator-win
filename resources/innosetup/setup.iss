@@ -25,8 +25,8 @@ DisableFinishedPage=No
 DisableWelcomePage=Yes
 ;Optional License
 LicenseFile=license.rtf
-;Win7 SP1 or above
-MinVersion=6.1.7601
+;Windows 10 Version 1703 (Creators Update)
+MinVersion=10.0.15063
 OutputBaseFilename=Cryptomator-{#AppVersion}-x64
 ;TODO
 Compression=lzma2/ultra
