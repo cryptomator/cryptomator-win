@@ -19,7 +19,7 @@ BEGIN
             VALUE "FileVersion",      VER_FILEVERSION_STR
 			VALUE "Full Version",     VER_FILEVERSION_STR
             VALUE "InternalName",     "Cryptomator"
-            VALUE "LegalCopyright",   "Copyright \xA9 2020 Skymatic UG (haftungsbeschränkt)"
+            VALUE "LegalCopyright",   "Copyright \xA9 2020 GmbH"
             VALUE "OriginalFilename", "Cryptomator.exe"
             VALUE "ProductName",      "Cryptomator"
             VALUE "ProductVersion",   VER_PRODUCTVERSION_STR
