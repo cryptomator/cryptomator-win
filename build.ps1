@@ -10,6 +10,8 @@ Write-Output "`$signtool=$signtool"
 Write-Output "`$buildDir=$buildDir"
 Write-Output "`$Env:JAVA_HOME=$Env:JAVA_HOME"
 
+$dokanInstallerVersion = & $PSScriptRoot"\Get-MSIFileInformation.ps1" .\resources\innosetup\Dokan_x64.msi "ProductVersion"
+
 if (-not (Test-Path $Env:JAVA_HOME)) {
     Write-Output "JAVA_HOME not set or does not exist: $Env:JAVA_HOME"
     exit 1;
@@ -32,6 +34,11 @@ if(-not (Test-Path $Env:JAVA_HOME\bin\jpackager.exe)){
 
 if(-not (Test-Path "C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe")){
     Write-Output "C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe does not exist. Please install from http://www.angusj.com/resourcehacker."
+    exit 1;
+}
+
+if(-not ($dokanInstallerVersion -eq [System.Diagnostics.FileVersionInfo]::GetVersionInfo(".\resources\app\dlls\dokan1.dll").FileVersion)){
+    Write-Output "The Dokany version of the installer does not match the signed Dokan-DLL. Please update one of them such they belong to the same release."
     exit 1;
 }
 
@@ -93,4 +100,5 @@ Copy-Item resources/app/dlls/* app/Cryptomator/
 Copy-Item -Recurse resources/innosetup/* app/
 Set-Location app/
 $env:CRYPTOMATOR_VERSION = "$buildVersion"
+$env:DOKAN_VERSION = "$dokanInstallerVersion"
 & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' setup.iss /Qp "/sdefault=`"$signtool`""

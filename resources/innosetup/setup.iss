@@ -3,6 +3,7 @@
 [Setup]
 #define AppVersion GetEnv("CRYPTOMATOR_VERSION")
 #define FileInfoVersion GetFileVersion("Cryptomator/Cryptomator.exe")
+#define BundledDokanVersion GetEnv("DOKAN_VERSION")
 
 SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
 AppId=Cryptomator
@@ -34,6 +35,7 @@ PrivilegesRequired=admin
 SetupIconFile=setup.ico
 UninstallDisplayIcon={app}\Cryptomator.ico
 UninstallDisplayName=Cryptomator
+UsePreviousSetupType=Yes
 VersionInfoVersion={#FileInfoVersion}
 WizardImageFile=setup-welcome.bmp
 WizardImageStretch=Yes
@@ -41,14 +43,22 @@ WizardSmallImageFile=setup-banner-icon.bmp
 WizardStyle=modern
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
+AlwaysShowComponentsList=Yes
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [Components]
 Name: "main"; Description: "Cryptomator"; Types: full compact custom; Flags: fixed
-Name: "dokan"; Description: "Dokan File System Driver"; Types: full; Flags: disablenouninstallwarning
+;Due to bug reports in the forum we force a restart after installing dokany
+Name: "dokan"; Description: "Dokan File System Driver"; Types: full dokan; Flags: disablenouninstallwarning restart
 Name: "webdav"; Description: "WebDAV system configuration"; Types: full compact; ExtraDiskSpaceRequired: 50; Flags: disablenouninstallwarning
+
+[Types]
+Name: "full"; Description:"Full Installation"
+Name: "custom"; Description:"Custom Installation"; Flags: iscustom
+Name: "compact"; Description:"Installation without third party software"
+Name: "dokan"; Description:"Installation of Cryptomator and Dokany"
 
 [Registry]
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; ValueType: dword; ValueName: "FileSizeLimitInBytes"; ValueData: "$ffffffff"; Components: webdav
@@ -73,7 +83,7 @@ Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{
 
 [Run]
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/norestart /q /chainingpackage ADMINDEPLOYMENT"; StatusMsg: "Installing VC++ Redistributable 2019..."; Flags: waituntilterminated; Components: dokan; Check: not VCRedistInstalled
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; Check: not FileExists(ExpandConstant('{sys}\drivers\dokan1.sys'))
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; 
 Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; BeforeInstall: PrepareForWebDAV; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
@@ -84,6 +94,8 @@ const
   RegProviderOrderValueName = 'ProviderOrder';
   RegWebClientValue = 'webclient';
   RegVcRedistKey = 'SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14';
+  DokanNameCheck = 'Dokan Library';
+  BundledDokanVersion = '{#BundledDokanVersion}';
 
 function StrSplit(Text: String; Separator: String): TArrayOfString;
 var
@@ -205,6 +217,60 @@ begin
   PatchProviderOrderRegValue();
 end;
 
+// Detects over the registry if an old version of Dokany is installed. Returns true if this is the case.
+function oldDokanVersionDetected(): Boolean;
+var
+  I: Integer;
+  Names: TArrayOfString;
+  TempRegKey: String;
+  TempRegValueName: String;
+  TmpNameCheck: String;
+  InstalledDokanVersion: String;
+  FoundEntry: Boolean;
+  DebugString: String;
+begin
+  Result := False;
+  TempRegValueName := '';
+  FoundEntry := False;
+  if RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', Names) then
+  begin
+    for I := 0 to GetArrayLength(Names) - 1 do
+    begin
+      TempRegKey := 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\'+Names[I];
+      if (RegQueryStringValue(HKEY_LOCAL_MACHINE, TempRegKey, 'DisplayName', TempRegValueName)) then
+      begin
+        TmpNameCheck := Copy(TempRegValueName,1,Length(DokanNameCheck))
+        if(CompareStr(TmpNameCheck,DokanNameCheck) = 0) then 
+        begin
+          //We found it!
+          if (RegQueryStringValue(HKEY_LOCAL_MACHINE, TempRegKey, 'FullVersion', InstalledDokanVersion)) then
+          begin
+             Result := (CompareText(Trim(InstalledDokanVersion), Trim(BundledDokanVersion)) < 0);
+             if (Result) then begin MsgBox('We detected an older Dokany version on your system. Please uninstall it first and do a reboot. Afterwards continue with the installation.', mbInformation, MB_OK); end;
+             FoundEntry := True;
+          end;
+        end;
+      end;
+      if FoundEntry = True then
+      begin
+          break;
+      end;
+    end;
+  end;
+end;
+
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  Result := True;
+  if CurPageID = wpSelectComponents then
+  begin
+    // blocks installation if old dokan version is detected
+    Result := not( IsComponentSelected('dokan') and oldDokanVersionDetected());
+  end;
+end;
+
+
 function InitializeSetup(): Boolean;
 begin
 // Possible future improvements:
@@ -212,4 +278,45 @@ begin
 //   if upgrade => check if same app is running and wait for it to exit
 //   Add pack200/unpack200 support?
   Result := true;
+end;
+
+//Alters some registry installer values for Cryptomator, depending if Dokan is already present on this computer or not
+procedure InitializeWizard();
+var
+  DokanDriverLocation : String;
+  SetupType : String;
+  SelectedComponents : String;
+  ComponentsLength: Integer;
+begin
+  //check if Dokan is installed
+  DokanDriverLocation := ExpandConstant('{sys}\drivers\dokan1.sys');
+  if FileExists(DokanDriverLocation) then
+  begin
+    if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1', 'Inno Setup: Setup Type', SetupType) then
+    begin
+      if CompareText('compact', Trim(SetupType))=0 then
+      begin
+        RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1', 'Inno Setup: Setup Type', 'full');
+      end;
+    end;
+
+    if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1', 'Inno Setup: Selected Components', SelectedComponents ) then
+    begin
+      SelectedComponents := Trim(SelectedComponents);
+      ComponentsLength := Length(SelectedComponents);
+      if Pos('dokan', SelectedComponents)=0 then
+      begin
+        if SelectedComponents[ComponentsLength] = ',' then
+        begin
+          Insert('dokan', SelectedComponents, ComponentsLength+1);
+        end
+        else
+        begin
+          Insert(',dokan', SelectedComponents, ComponentsLength+1);
+        end;
+          RegWriteStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1', 'Inno Setup: Selected Components', SelectedComponents)
+      end;
+    end;
+    //no error handling
+  end;
 end;
