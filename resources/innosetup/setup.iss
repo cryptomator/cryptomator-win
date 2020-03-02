@@ -216,7 +216,9 @@ begin
   PatchProviderOrderRegValue();
 end;
 
-function OldDokanVersionDetected(): Boolean;
+
+{ If Dokany is installed and its installation has a registry entry, this function returns the version string stored in the registry. If there is no registry entry for Dokany, it returns the empty string.}
+function ReadRegisteredDokanVersion(): String;
 var
   I: Integer;
   Names: TArrayOfString;
@@ -225,7 +227,7 @@ var
   TruncatedName: String;
   InstalledDokanVersion: String;
 begin
-  Result := False;
+  Result := '';
   RegValue := '';
   if RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', Names) then
   begin
@@ -241,9 +243,9 @@ begin
           //We found it!
           if (RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'FullVersion', InstalledDokanVersion)) then
           begin
-             Result := CompareText(Trim(InstalledDokanVersion), Trim(BundledDokanVersion)) < 0;
-			 break;
+            Result := InstalledDokanVersion;
           end;
+          break;
         end;
       end;
     end;
@@ -251,13 +253,59 @@ begin
 end;
 
 
+{ Compares the an (possibly) installed Dokan version with the bundled one and returns true if the installed on is equal or newer.}
+function IsInstalledDokanVersionSufficient(): Boolean;
+var
+  InstalledVersionString: String;
+  InstalledVersion: TArrayOfString;
+  BundledVersion: TArrayOfString;
+  IMajorVersion, IMinorVersion, IPatchVersion: Integer;
+  BMajorVersion, BMinorVersion, BPatchVersion: Integer;
+  FoundSufficientVersion: Boolean;
+  TestVar : Integer;
+begin
+	FoundSufficientVersion := False;
+  InstalledVersionString := ReadRegisteredDokanVersion();
+  if (Length(InstalledVersionString) > 0) then
+  begin
+    BundledVersion := StrSplit(Trim(BundledDokanVersion), '.');
+	  InstalledVersion := StrSplit(Trim(InstalledVersionString), '.');
+	  if GetArrayLength(InstalledVersion) >= 3 then
+	  begin
+	    IMajorVersion := StrToIntDef(InstalledVersion[0], 0);
+		  IMinorVersion := StrToIntDef(InstalledVersion[1], 0);
+		  IPatchVersion := StrToIntDef(InstalledVersion[2], 0);
+	    BMajorVersion := StrToIntDef(BundledVersion[0], 0);
+		  BMinorVersion := StrToIntDef(BundledVersion[1], 0);
+		  BPatchVersion := StrToIntDef(BundledVersion[2], 0);
+      if (IMajorVersion > BMajorVersion) then
+      begin
+        FoundSufficientVersion := true;
+      end
+      else if (IMajorVersion = BMajorVersion) and (IMinorVersion > BMinorVersion) then
+      begin
+        FoundSufficientVersion := true;
+      end
+      else if (IMajorVersion = BMajorVersion) and (IMinorVersion = BMinorVersion) and (IPatchVersion >= BPatchVersion) then
+      begin
+        FoundSufficientVersion := true;
+      end;
+    end;
+  end;
+  Result := FoundSufficientVersion;
+end;
+
+
 function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  DokanDriverLocation: String;
 begin
   Result := True;
-  if (CurPageID = wpSelectComponents) and WizardIsComponentSelected('dokan') and OldDokanVersionDetected() then
+  DokanDriverLocation := ExpandConstant('{sys}\drivers\dokany1.sys');
+  if (CurPageID = wpSelectComponents) and WizardIsComponentSelected('dokan') and FileExists(DokanDriverLocation) and (not IsInstalledDokanVersionSufficient()) then
   begin
-    // block installation if old dokan version is detected
-	MsgBox('We detected an older Dokany version on your system. Please uninstall it first and do a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
+    {block installation if dokan is installed and old version detected}
+	MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first over the "Apps & Feature" settings and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
 	Result := False;
   end
   else
@@ -268,25 +316,18 @@ end;
 
 
 procedure UpdateComponentsDependingOnDokany();
-var
-  DokanDriverLocation : String;
 begin
-  DokanDriverLocation := ExpandConstant('{sys}\drivers\dokan1.sys');
-  
-  // If Dokany is installed, we don't need to install it:
-  if FileExists(DokanDriverLocation) then
+  if IsInstalledDokanVersionSufficient() then
   begin
     WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (Already Installed)';
     WizardForm.ComponentsList.Checked[1] := false;
     Wizardform.ComponentsList.ItemEnabled[1] := false;
-    
-    // ... unless it is an old version:
-    if OldDokanVersionDetected() then
-    begin
-      WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (Update Required)';
-      WizardForm.ComponentsList.Checked[1] := true;
-      Wizardform.ComponentsList.ItemEnabled[1] := true;
-    end;
+  end
+  else
+  begin
+    WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver';
+    WizardForm.ComponentsList.Checked[1] := true;
+    Wizardform.ComponentsList.ItemEnabled[1] := true;
   end;
 end;
 
