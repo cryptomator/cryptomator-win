@@ -268,7 +268,7 @@ begin
 end;
 
 
-{ Compares the an (possibly) installed Dokan version with the bundled one and returns true if the installed on is equal or newer.}
+{ Compares an (possibly) installed Dokan version with the bundled one and returns true if the installed on is equal or newer.}
 function IsInstalledDokanVersionSufficient(): Boolean;
 var
   InstalledVersionString: String;
@@ -320,7 +320,7 @@ begin
   if (CurPageID = wpSelectComponents) and WizardIsComponentSelected('dokan') and FileExists(DokanDriverLocation) and (not IsInstalledDokanVersionSufficient()) then
   begin
     {block installation if dokan is installed and old version detected}
-	MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first over the "Apps & Feature" settings and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
+	MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via the "Apps & Feature" settings and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
 	Result := False;
   end
   else
