@@ -53,8 +53,7 @@ Name: "custom"; Description:"Custom Installation"; Flags: iscustom
 
 [Components]
 Name: "main"; Description: "Cryptomator"; Types: full custom; Flags: fixed
-;Due to bug reports in the forum we force a restart after installing dokany
-Name: "dokan"; Description: "Dokan File System Driver"; Types: full; Flags: disablenouninstallwarning restart
+Name: "dokan"; Description: "Dokan File System Driver"; Types: full; Flags: disablenouninstallwarning
 Name: "webdav"; Description: "WebDAV system configuration"; Types: full; ExtraDiskSpaceRequired: 50; Flags: disablenouninstallwarning
 
 [Registry]
