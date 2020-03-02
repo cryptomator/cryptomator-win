@@ -95,6 +95,7 @@ const
   
 var
   OriginalTypesChangeListener: TNotifyEvent;
+  LastKnownDokanRegistrySubKeyName: String;
 
 function StrSplit(Text: String; Separator: String): TArrayOfString;
 var
@@ -229,9 +230,22 @@ var
 begin
   Result := '';
   RegValue := '';
-  if RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', Names) then
+
+  { Check if we already found the registry location}
+  RegKey := LastKnownDokanRegistrySubKeyName
+  if (RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'DisplayName', RegValue)) then
   begin
-    // loop over registry entries in "Uninstall"
+    TruncatedName := Copy(RegValue, 1, Length(RegDokanDisplayName))
+    if(CompareStr(TruncatedName, RegDokanDisplayName) = 0) then 
+    begin
+      if (RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'FullVersion', InstalledDokanVersion)) then
+      begin
+        Result := InstalledDokanVersion;
+      end;
+    end;
+  end
+  else if RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', Names) then
+  begin {Otherwise loop over all subkeys of the uninstall key}
     for I := 0 to GetArrayLength(Names) - 1 do
     begin
       RegKey := 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\' + Names[I];
@@ -241,6 +255,7 @@ begin
         if(CompareStr(TruncatedName, RegDokanDisplayName) = 0) then 
         begin
           //We found it!
+          LastKnownDokanRegistrySubKeyName := RegKey;
           if (RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'FullVersion', InstalledDokanVersion)) then
           begin
             Result := InstalledDokanVersion;
@@ -340,10 +355,17 @@ begin
 end;
 
 
-//Alters some registry installer values for Cryptomator, depending if Dokan is already present on this computer or not
 procedure InitializeWizard();
 begin
   OriginalTypesChangeListener := WizardForm.TypesCombo.OnChange;
   WizardForm.TypesCombo.OnChange := @TypesChanged;
   UpdateComponentsDependingOnDokany();
+end;
+
+
+function InitializeSetup(): Boolean;
+begin
+  {We initialize the last known dokan registry entry to "none"}
+  LastKnownDokanRegistrySubKeyName := '';
+  Result := True;
 end;
