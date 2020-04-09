@@ -1,10 +1,12 @@
 param(
-  [string]$buildVersion = "continuous",
+  [string]$upstreamVersion = "continuous",
   [string]$signtool = "signtool sign /sha1 FF52240075AD7D14AF25629FDF69635357C7D14B `$p"
 )
 
 $buildDir = Split-Path -Parent $PSCommandPath
+$buildVersion = & git rev-list --count HEAD
 
+Write-Output "`$upstreamVersion=$upstreamVersion"
 Write-Output "`$buildVersion=$buildVersion"
 Write-Output "`$signtool=$signtool"
 Write-Output "`$buildDir=$buildDir"
@@ -49,7 +51,7 @@ Remove-Item -Recurse -ErrorAction Ignore -Force buildkit.zip, app, libs
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # download and extract buildkit
-$buildkitUrl = "https://dl.bintray.com/cryptomator/cryptomator/${buildVersion}/buildkit-win.zip"
+$buildkitUrl = "https://dl.bintray.com/cryptomator/cryptomator/${upstreamVersion}/buildkit-win.zip"
 $wc = New-Object System.Net.WebClient
 Write-Output "Downloading ${buildkitUrl}..."
 $wc.Downloadfile($buildkitUrl, "buildkit.zip")
@@ -68,7 +70,7 @@ if (-not (Test-Path libs)) {
   --output app `
   --name Cryptomator `
   --class org.cryptomator.launcher.Cryptomator `
-  --main-jar launcher-$buildVersion.jar `
+  --main-jar launcher-$upstreamVersion.jar `
   --icon resources/app/Cryptomator.ico `
   --jvm-args "-Dcryptomator.logDir=`"~/AppData/Roaming/Cryptomator`"" `
   --jvm-args "-Dcryptomator.settingsPath=`"~/AppData/Roaming/Cryptomator/settings.json`"" `
@@ -77,7 +79,7 @@ if (-not (Test-Path libs)) {
   --jvm-args "-Xss2m" `
   --jvm-args "-Xmx512m" `
   --identifier org.cryptomator `
-  --version $buildVersion `
+  --version $upstreamVersion `
   --module-path `"$Env:JAVA_HOME\jmods`" `
   --add-modules java.base,java.logging,java.xml,java.sql,java.management,java.security.sasl,java.naming,java.datatransfer,java.security.jgss,java.rmi,java.scripting,java.prefs,java.desktop,jdk.unsupported,java.net.http,jdk.crypto.ec `
   --strip-native-commands
@@ -99,6 +101,6 @@ Copy-Item resources/app/dlls/* app/Cryptomator/
 # build installer
 Copy-Item -Recurse resources/innosetup/* app/
 Set-Location app/
-$env:CRYPTOMATOR_VERSION = "$buildVersion"
+$env:CRYPTOMATOR_VERSION = "$upstreamVersion"
 $env:DOKAN_VERSION = "$dokanInstallerVersion"
 & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' setup.iss /Qp "/sdefault=`"$signtool`""
