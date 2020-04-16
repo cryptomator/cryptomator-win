@@ -76,6 +76,7 @@ if (-not (Test-Path libs)) {
   --jvm-args "-Dcryptomator.settingsPath=`"~/AppData/Roaming/Cryptomator/settings.json`"" `
   --jvm-args "-Dcryptomator.ipcPortPath=`"~/AppData/Roaming/Cryptomator/ipcPort.bin`"" `
   --jvm-args "-Dcryptomator.keychainPath=`"~/AppData/Roaming/Cryptomator/keychain.json`"" `
+  --jvm-args "-Dcryptomator.buildNumber=`"exe-$buildVersion`"" `
   --jvm-args "-Xss2m" `
   --jvm-args "-Xmx512m" `
   --identifier org.cryptomator `
