@@ -3,5 +3,6 @@
 /build.xml
 /libs/
 /app/
+/runtimeImage/
 LICENSE.txt
 launcher-win.bat

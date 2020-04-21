@@ -19,39 +19,19 @@ if (-not (Test-Path $Env:JAVA_HOME)) {
     exit 1;
 }
 
-if(-not (Test-Path $Env:JAVA_HOME\jmods\jdk.packager.jar)){
-    Write-Output "$Env:JAVA_HOME\jmods\jdk.packager.jar does not exist. You need to patch your JDK installation with the jar provided under ./tools"
-    exit 1;
-}
-
-if(-not (Test-Path $Env:JAVA_HOME\bin\jdk.packager.jar)){
-    Write-Output "$Env:JAVA_HOME\bin\jdk.packager.jar does not exist. You need to patch your JDK installation with the jar provided under ./tools"
-    exit 1;
-}
-
-if(-not (Test-Path $Env:JAVA_HOME\bin\jpackager.exe)){
-    Write-Output "$Env:JAVA_HOME\bin\jpackager.exe does not exist. You need to patch your JDK installation with the exe provided under ./tools"
-    exit 1;
-}
-
-if(-not (Test-Path "C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe")){
-    Write-Output "C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe does not exist. Please install from http://www.angusj.com/resourcehacker."
-    exit 1;
-}
-
 if(-not ($dokanInstallerVersion -eq [System.Diagnostics.FileVersionInfo]::GetVersionInfo(".\resources\app\dlls\dokan1.dll").FileVersion)){
     Write-Output "The Dokany version of the installer does not match the signed Dokan-DLL. Please update one of them such they belong to the same release."
     exit 1;
 }
 
 # cleanup
-Remove-Item -Recurse -ErrorAction Ignore -Force buildkit.zip, app, libs
+Remove-Item -Recurse -ErrorAction Ignore -Force buildkit.zip, app, libs, runtimeImage
 
 # configure stuff
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # download and extract buildkit
-$buildkitUrl = "https://dl.bintray.com/cryptomator/cryptomator/${upstreamVersion}/buildkit-win.zip"
+$buildkitUrl = "https://github.com/cryptomator/cryptomator/releases/download/${upstreamVersion}/buildkit-win.zip"
 $wc = New-Object System.Net.WebClient
 Write-Output "Downloading ${buildkitUrl}..."
 $wc.Downloadfile($buildkitUrl, "buildkit.zip")
@@ -61,42 +41,43 @@ if (-not (Test-Path libs)) {
     exit 1;
 }
 
-# create application dir
-& "$Env:JAVA_HOME\bin\jpackager" `
-  create-image `
+# create runtime image
+& "$Env:JAVA_HOME\bin\jlink" `
   --verbose `
-  --echo-mode `
-  --input libs `
-  --output app `
-  --name Cryptomator `
-  --class org.cryptomator.launcher.Cryptomator `
-  --main-jar launcher-$upstreamVersion.jar `
-  --icon resources/app/Cryptomator.ico `
-  --jvm-args "-Dcryptomator.logDir=`"~/AppData/Roaming/Cryptomator`"" `
-  --jvm-args "-Dcryptomator.settingsPath=`"~/AppData/Roaming/Cryptomator/settings.json`"" `
-  --jvm-args "-Dcryptomator.ipcPortPath=`"~/AppData/Roaming/Cryptomator/ipcPort.bin`"" `
-  --jvm-args "-Dcryptomator.keychainPath=`"~/AppData/Roaming/Cryptomator/keychain.json`"" `
-  --jvm-args "-Dcryptomator.buildNumber=`"exe-$buildVersion`"" `
-  --jvm-args "-Xss2m" `
-  --jvm-args "-Xmx512m" `
-  --identifier org.cryptomator `
-  --version $upstreamVersion `
+  --output runtimeImage `
   --module-path `"$Env:JAVA_HOME\jmods`" `
   --add-modules java.base,java.logging,java.xml,java.sql,java.management,java.security.sasl,java.naming,java.datatransfer,java.security.jgss,java.rmi,java.scripting,java.prefs,java.desktop,jdk.unsupported,java.net.http,jdk.crypto.ec `
-  --strip-native-commands
+  --no-header-files `
+  --no-man-pages `
+  --strip-debug `
+  --strip-native-commands `
+  --compress=1
+
+# create application dir
+Write-Output "Create application dir: ..."
+& "$Env:JAVA_HOME\bin\jpackage" `
+  --verbose `
+  --type app-image `
+  --runtime-image runtimeImage `
+  --input libs `
+  --dest app `
+  --name Cryptomator `
+  --vendor "Skymatic GmbH" `
+  --copyright "(C) 2016 - 2020 Skymatic GmbH" `
+  --app-version $upstreamVersion `
+  --icon resources/app/Cryptomator.ico `
+  --java-options "-Dcryptomator.logDir=`"~/AppData/Roaming/Cryptomator`"" `
+  --java-options "-Dcryptomator.settingsPath=`"~/AppData/Roaming/Cryptomator/settings.json`"" `
+  --java-options "-Dcryptomator.ipcPortPath=`"~/AppData/Roaming/Cryptomator/ipcPort.bin`"" `
+  --java-options "-Dcryptomator.keychainPath=`"~/AppData/Roaming/Cryptomator/keychain.json`"" `
+  --java-options "-Dcryptomator.buildNumber=`"exe-$buildVersion`"" `
+  --java-options "-Xss2m" `
+  --java-options "-Xmx512m" `
+  --main-class org.cryptomator.launcher.Cryptomator `
+  --main-jar launcher-$upstreamVersion.jar
 
 # adjust .app
 & 'attrib' -r 'app/Cryptomator/Cryptomator.exe'
-& 'C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe' `
-  -open "resources\resourcehacker\cryptomator.rc" `
-  -save "resources\resourcehacker\cryptomator.res" `
-  -action compile
-& 'C:\Program Files (x86)\Resource Hacker\ResourceHacker.exe' `
-  -open "app\Cryptomator\Cryptomator.exe" `
-  -resource "resources\resourcehacker\cryptomator.res" `
-  -save "app\Cryptomator\Cryptomator.exe" `
-  -action modify `
-  -mask ",,,"
 Copy-Item resources/app/dlls/* app/Cryptomator/
 
 # build installer
