@@ -25,10 +25,9 @@ DisableFinishedPage=No
 DisableWelcomePage=Yes
 ;Optional License
 LicenseFile=license.rtf
-;Windows 10 Version 1703 (Creators Update)
-MinVersion=10.0.15063
+;Win7 SP1 or above
+MinVersion=6.1.7601
 OutputBaseFilename=Cryptomator-{#AppVersion}-x64
-;TODO
 Compression=lzma2/ultra
 SolidCompression=yes
 PrivilegesRequired=admin
@@ -364,7 +363,18 @@ end;
 
 
 function InitializeSetup(): Boolean;
+var
+  Version: TWindowsVersion;
+  S: String;
 begin
+  GetWindowsVersionEx(Version);
+  
+  // Show warning for legacy Windows versions
+  if Version.Major < 10 then
+  begin
+    SuppressibleMsgBox('This version of Windows is not officially supported. Proceed at your own risk.', mbInformation, MB_OK, IDOK);
+  end;
+  
   {We initialize the last known dokan registry entry to "none"}
   LastKnownDokanRegistrySubKeyName := '';
   Result := True;
