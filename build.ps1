@@ -1,6 +1,6 @@
 param(
   [string]$upstreamVersion = "continuous",
-  [string]$signtool = "signtool sign /sha1 FF52240075AD7D14AF25629FDF69635357C7D14B `$p"
+  [string]$signtool = "signtool sign /sha1 FF52240075AD7D14AF25629FDF69635357C7D14B /tr http://timestamp.digicert.com /fd sha256 /d `$qCryptomator`$q `$f"
 )
 
 $buildDir = Split-Path -Parent $PSCommandPath
