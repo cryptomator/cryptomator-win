@@ -315,7 +315,7 @@ var
   DokanDriverLocation: String;
 begin
   Result := True;
-  DokanDriverLocation := ExpandConstant('{sys}\drivers\dokany1.sys');
+  DokanDriverLocation := ExpandConstant('{sys}\drivers\dokan1.sys');
   if (CurPageID = wpSelectComponents) and WizardIsComponentSelected('dokan') and FileExists(DokanDriverLocation) and (not IsInstalledDokanVersionSufficient()) then
   begin
     {block installation if dokan is installed and old version detected}
