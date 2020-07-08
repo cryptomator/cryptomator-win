@@ -13,6 +13,7 @@ Write-Output "`$buildDir=$buildDir"
 Write-Output "`$Env:JAVA_HOME=$Env:JAVA_HOME"
 
 $dokanInstallerVersion = & $PSScriptRoot"\Get-MSIFileInformation.ps1" .\resources\innosetup\Dokan_x64.msi "ProductVersion"
+Write-Output "`$dokanInstallerVersion=$dokanInstallerVersion"
 
 if (-not (Test-Path $Env:JAVA_HOME)) {
     Write-Output "JAVA_HOME not set or does not exist: $Env:JAVA_HOME"
