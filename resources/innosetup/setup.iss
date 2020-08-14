@@ -86,7 +86,6 @@ const
   RegNetworkProviderOrderSubkey = 'SYSTEM\CurrentControlSet\Control\NetworkProvider\Order';
   RegProviderOrderValueName = 'ProviderOrder';
   RegWebClientValue = 'webclient';
-  RegVcRedistKey = 'SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14';
   RegDokanDisplayName = 'Dokan Library';
   BundledDokanVersion = '{#BundledDokanVersion}';
   
