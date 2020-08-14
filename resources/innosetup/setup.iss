@@ -71,13 +71,11 @@ Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion si
 Source: "Cryptomator\*.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs signonce
 Source: "Cryptomator\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
-Source: "vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
 
 [Icons]
 Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{app}\Cryptomator.ico"
 
 [Run]
-Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/norestart /q /chainingpackage ADMINDEPLOYMENT"; StatusMsg: "Installing VC++ Redistributable 2019..."; Flags: waituntilterminated; Components: dokan; Check: not VCRedistInstalled
 Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; 
 Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; BeforeInstall: PrepareForWebDAV; Flags: waituntilterminated runhidden; Components: webdav
@@ -118,42 +116,6 @@ begin
     end;
   until Length(Text) = 0;
   Result := Dest
-end;
-
-function VCRedistInstalled(): Boolean;
-var
-  VersionString: String;
-  Version: TArrayOfString;
-  MajorVersion, MinorVersion, BuildVersion: Integer;
-  FoundRequiredVersion: Boolean;
-begin
-  Result := False;
-  if RegKeyExists(HKEY_LOCAL_MACHINE, RegVcRedistKey) then
-  begin
-    if RegQueryStringValue(HKEY_LOCAL_MACHINE, RegVcRedistKey, 'Version', VersionString)then
-	begin
-	  Version := StrSplit(VersionString, '.');
-	  if GetArrayLength(Version) >= 3 then
-	  begin
-	    MajorVersion := StrToIntDef(Version[0], 0);
-		MinorVersion := StrToIntDef(Version[1], 0);
-		BuildVersion := StrToIntDef(Version[2], 0);
-		if (MajorVersion > 14) then
-		begin
-		  FoundRequiredVersion := true;
-		end
-		else if (MajorVersion = 14) and (MinorVersion > 21) then
-		begin
-		  FoundRequiredVersion := true;
-		end
-		else if (MajorVersion = 14) and (MinorVersion = 21) and (BuildVersion >= 27702) then
-		begin
-		  FoundRequiredVersion := true;
-		end;
-	  end;
-    end;   
-  end;
-  Result := FoundRequiredVersion;
 end;
 
 procedure PatchProviderOrderRegValue();
