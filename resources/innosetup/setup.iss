@@ -131,22 +131,18 @@ var
 begin
   OldValue := ExpandConstant('{reg:HKLM\' + RegNetworkProviderOrderSubkey + ',' + RegProviderOrderValueName + '|}');
   Values := StrSplit(OldValue, ',');
-  if (GetArrayLength(Values) = 1) and (CompareStr(Values[0], '') = 0) then
-  begin
+  if (GetArrayLength(Values) = 1) and (CompareStr(Values[0], '') = 0) then begin
     RegWriteStringValue(HKEY_LOCAL_MACHINE, RegNetworkProviderOrderSubkey, RegProviderOrderValueName, RegWebClientValue);
   end
   else
   begin
     WebClientValueFound := False;
-    for i := 0 to GetArrayLength(Values) - 1 do
-    begin
-      if CompareStr(RegWebClientValue, Values[i]) = 0 then
-      begin
+    for i := 0 to GetArrayLength(Values) - 1 do begin
+      if CompareStr(RegWebClientValue, Values[i]) = 0 then begin
         WebClientValueFound := True;
       end;
     end;
-    if not WebClientValueFound then
-    begin
+    if not WebClientValueFound then begin
       RegWriteStringValue(HKEY_LOCAL_MACHINE, RegNetworkProviderOrderSubkey, RegProviderOrderValueName, RegWebClientValue + ',' + OldValue);
     end;
   end;
@@ -213,14 +209,12 @@ var
 begin
 	Result := False;
   InstalledVersion := ReadDokanVersion();
-  if InstalledVersion >= 0 then
-  begin
+  if InstalledVersion >= 0 then begin
     TmpString := Trim(BundledDokanVersion);
     StringChangeEx(TmpString, '.', '',False);
     Delete(TmpString,4,1000); //we rely on that major, minor and patch never become two digit numbers
     BundledVersion := StrToInt64Def(TmpString, 9223372036854775806); //if this fails for whatever reason we just say we have the better version
-    if InstalledVersion >= BundledVersion then
-    begin
+    if InstalledVersion >= BundledVersion then begin
       Result := True;
     end;
   end;
@@ -237,8 +231,7 @@ begin
   GetWindowsVersionEx(Version);
   
   // Show warning for legacy Windows versions
-  if Version.Major < 10 then
-  begin
+  if Version.Major < 10 then begin
     SuppressibleMsgBox('This version of Windows is not officially supported. Proceed at your own risk.', mbInformation, MB_OK, IDOK);
   end;
   Result := True;
@@ -247,12 +240,9 @@ end;
 
 procedure UpdateComponentsDependingOnDokany();
 begin
-  if IsInstalledDokanVersionSufficient() then
-  begin
+  if IsInstalledDokanVersionSufficient() then begin
     WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (up-to-date)';
-  end
-  else
-  begin
+  end else begin
     WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver';
   end;
 end;
@@ -282,14 +272,13 @@ var
   OutdatedAnswer : Integer;
 begin
   Result := True;
-  if ( CurPageID = wpSelectComponents) then
-  begin
+  if ( CurPageID = wpSelectComponents) then begin
     DokanPresentOnSystem := (ReadDokanVersion <> -1);
     DokanComponentSelected := WizardIsComponentSelected('dokan');
     if DokanPresentOnSystem then begin 
       if DokanComponentSelected then begin 
         if not IsInstalledDokanVersionSufficient() then begin
-          MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via the "Apps & Feature" settings and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
+          MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via "Apps & Feature" and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
           Result := False
         end;
       end else begin
