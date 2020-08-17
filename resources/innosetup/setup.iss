@@ -86,12 +86,10 @@ const
   RegNetworkProviderOrderSubkey = 'SYSTEM\CurrentControlSet\Control\NetworkProvider\Order';
   RegProviderOrderValueName = 'ProviderOrder';
   RegWebClientValue = 'webclient';
-  RegInstallationKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1';
   BundledDokanVersion = '{#BundledDokanVersion}';
   
 var
   OriginalTypesChangeListener: TNotifyEvent;
-  FirstInstallation : Boolean; 
 
 
 // Misc section
@@ -244,8 +242,6 @@ begin
     SuppressibleMsgBox('This version of Windows is not officially supported. Proceed at your own risk.', mbInformation, MB_OK, IDOK);
   end;
   
-  {We initialize the last known dokan registry entry to "none"}
-  FirstInstallation:= (not RegKeyExists(HKEY_LOCAL_MACHINE,RegInstallationKey));
   Result := True;
 end;
 
