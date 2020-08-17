@@ -76,7 +76,7 @@ Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinsta
 Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{app}\Cryptomator.ico"
 
 [Run]
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; 
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; Check: not IsInstalledDokanVersionSufficient;
 Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; BeforeInstall: PrepareForWebDAV; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
@@ -241,7 +241,6 @@ begin
   begin
     SuppressibleMsgBox('This version of Windows is not officially supported. Proceed at your own risk.', mbInformation, MB_OK, IDOK);
   end;
-  
   Result := True;
 end;
 
@@ -251,8 +250,6 @@ begin
   if IsInstalledDokanVersionSufficient() then
   begin
     WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (up-to-date)';
-    WizardForm.ComponentsList.Checked[1] := false;
-    Wizardform.ComponentsList.ItemEnabled[1] := false;
   end
   else
   begin
@@ -291,12 +288,13 @@ begin
     DokanComponentSelected := WizardIsComponentSelected('dokan');
     if DokanPresentOnSystem then begin 
       if DokanComponentSelected then begin 
-        // we already now that it must be outdated (see UpdateComponentsDependingOnDokany) -> block installation
-        MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via the "Apps & Feature" settings and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
-        Result := False
+        if not IsInstalledDokanVersionSufficient() then begin
+          MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via the "Apps & Feature" settings and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
+          Result := False
+        end;
       end else begin
-        //TODO: inform user about risk
-        OutdatedAnswer := MsgBox('We detected an outdated Dokany version on your system, but it was not selected to update it. Cryptomator will most probably be able to load it, but its usage might result in errors. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
+        //inform user about risk
+        OutdatedAnswer := MsgBox('We detected Dokany is already present on your system, but it was not selected for an update check. Cryptomator will be able to use it, but its usage might lead to errors. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
         if OutdatedAnswer = IDNO then begin
           Result := False; 
         end;
