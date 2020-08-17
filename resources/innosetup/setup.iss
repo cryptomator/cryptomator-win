@@ -86,7 +86,7 @@ const
   RegNetworkProviderOrderSubkey = 'SYSTEM\CurrentControlSet\Control\NetworkProvider\Order';
   RegProviderOrderValueName = 'ProviderOrder';
   RegWebClientValue = 'webclient';
-  RegInstallationKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#AppId}_is1';
+  RegInstallationKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\Cryptomator_is1';
   BundledDokanVersion = '{#BundledDokanVersion}';
   
 var
@@ -94,85 +94,32 @@ var
   FirstInstallation : Boolean; 
 
 
-// Wizard section
+// Misc section
 
-function InitializeSetup(): Boolean;
+function StrSplit(Text: String; Separator: String): TArrayOfString;
 var
-  Version: TWindowsVersion;
-  S: String;
+  i, p: Integer;
+  Dest: TArrayOfString;
 begin
-  GetWindowsVersionEx(Version);
-  
-  // Show warning for legacy Windows versions
-  if Version.Major < 10 then
-  begin
-    SuppressibleMsgBox('This version of Windows is not officially supported. Proceed at your own risk.', mbInformation, MB_OK, IDOK);
-  end;
-  
-  {We initialize the last known dokan registry entry to "none"}
-  FirstInstallation:= (not RegKeyExists(HKEY_LOCAL_MACHINE,RegInstallationKey));
-  Result := True;
-end;
-
-
-procedure InitializeWizard();
-begin
-  OriginalTypesChangeListener := WizardForm.TypesCombo.OnChange;
-  WizardForm.TypesCombo.OnChange := @TypesChanged;
-  UpdateComponentsDependingOnDokany();
-end;
-
-
-procedure TypesChanged(Sender: TObject);
-begin
-  { First let Inno Setup update the components selection }
-  OriginalTypesChangeListener(Sender);
-  { And then check for changes }
-  UpdateComponentsDependingOnDokany();
-end;
-
-
-procedure UpdateComponentsDependingOnDokany();
-begin
-  if IsInstalledDokanVersionSufficient() then
-  begin
-    WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (up-to-date)';
-    WizardForm.ComponentsList.Checked[1] := false;
-    Wizardform.ComponentsList.ItemEnabled[1] := false;
-  end
-  else
-  begin
-    WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver';
-  end;
-end;
-
-
-function NextButtonClick(CurPageID: Integer): Boolean;
-var
-  DokanComponentSelected: Boolean;
-  DokanPresentOnSystem: Boolean;
-  OutdatedAnswer : Integer;
-begin
-  Result := True;
-  if ( CurPageID = wpSelectComponents) then
-  begin
-    DokanPresentOnSystem := (ReadDokanVersion != -1);
-    DokanComponentSelected := WizardIsComponentSelected('dokan');
-    if DokanPresentOnSystem then begin 
-      if DokanComponentSelected then begin 
-        // we already now that it must be outdated (see UpdateComponentsDependingOnDokany) -> block installation
-        MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via the "Apps & Feature" settings and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
-        Result := False
-      end else begin
-        //TODO: inform user about risk
-        OutdatedAnswer := MsgBox('We detected an outdated Dokany version on your system, but it was not selected to update it. Cryptomator will most probably be able to load it, but its usage might result in errors. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
-        if OutdatedAnswer = IDNO then begin
-          Result := False; 
-        end;
-      end;
+  i := 0;
+  repeat
+    SetArrayLength(Dest, i + 1);
+    p := Pos(Separator, Text);
+    if p > 0 then
+    begin
+      Dest[i] := Copy(Text, 1, p - 1);
+      Text := Copy(Text, p + Length(Separator), Length(Text));
+      i := i + 1;
+    end
+    else
+    begin
+      Dest[i] := Text;
+      Text := '';
     end;
-  end;
+  until Length(Text) = 0;
+  Result := Dest
 end;
+
 
 
 // System section
@@ -241,28 +188,9 @@ end;
 
 // Dokan section
 
-{ Compares an (possibly) installed Dokan version with the bundled one and returns true if the installed on is equal or newer.}
-function IsInstalledDokanVersionSufficient(): Boolean;
-var
-  InstalledVersion: Int64;
-  BundledVersion: TArrayOfString;
-begin
-	Result := False;
-  InstalledVersion := ReadDokanVersion();
-  if InstalledVersion >= 0 then
-  begin
-    BundledVersion := StrToInt64Def(StringChangeEx(Trim(BundledDokanVersion), '.', '',False), high(Int64));
-    if InstalledVersion >= BundledVersion then
-      Result := True;
-  end;
-end;
-
-
-
-
-{ Calling DokanVersion() function from the dll. If it does not exists, an exception is thrown. }
-function DokanVersion (): Int64;
-external 'DokanVersion@dokan1.dll stdcall setuponly delayload'
+{ Calling DokanVersion() function from the dll. If it does not exists, an exception is thrown. The version number returned contains three digits.}
+function DokanVersion (): Integer;
+external 'DokanVersion@dokan1.dll stdcall setuponly delayload';
 
 
 { Returns the Versionnumber from the installed Dokan library or returns -1, if this is not possible.}
@@ -278,28 +206,106 @@ begin
 end;
 
 
-// Misc section
-
-function StrSplit(Text: String; Separator: String): TArrayOfString;
+{ Compares an (possibly) installed Dokan version with the bundled one and returns true if the installed on is equal or newer.}
+function IsInstalledDokanVersionSufficient(): Boolean;
 var
-  i, p: Integer;
-  Dest: TArrayOfString;
+  InstalledVersion: Int64;
+  BundledVersion: Int64;
+  TmpString: String;
 begin
-  i := 0;
-  repeat
-    SetArrayLength(Dest, i + 1);
-    p := Pos(Separator, Text);
-    if p > 0 then
+	Result := False;
+  InstalledVersion := ReadDokanVersion();
+  if InstalledVersion >= 0 then
+  begin
+    TmpString := Trim(BundledDokanVersion);
+    StringChangeEx(TmpString, '.', '',False);
+    Delete(TmpString,4,1000); //we rely on that major, minor and patch never become two digit numbers
+    BundledVersion := StrToInt64Def(TmpString, 9223372036854775806); //if this fails for whatever reason we just say we have the better version
+    if InstalledVersion >= BundledVersion then
     begin
-      Dest[i] := Copy(Text, 1, p - 1);
-      Text := Copy(Text, p + Length(Separator), Length(Text));
-      i := i + 1;
-    end
-    else
-    begin
-      Dest[i] := Text;
-      Text := '';
+      Result := True;
     end;
-  until Length(Text) = 0;
-  Result := Dest
+  end;
 end;
+
+
+// Wizard section
+
+function InitializeSetup(): Boolean;
+var
+  Version: TWindowsVersion;
+  S: String;
+begin
+  GetWindowsVersionEx(Version);
+  
+  // Show warning for legacy Windows versions
+  if Version.Major < 10 then
+  begin
+    SuppressibleMsgBox('This version of Windows is not officially supported. Proceed at your own risk.', mbInformation, MB_OK, IDOK);
+  end;
+  
+  {We initialize the last known dokan registry entry to "none"}
+  FirstInstallation:= (not RegKeyExists(HKEY_LOCAL_MACHINE,RegInstallationKey));
+  Result := True;
+end;
+
+
+procedure UpdateComponentsDependingOnDokany();
+begin
+  if IsInstalledDokanVersionSufficient() then
+  begin
+    WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (up-to-date)';
+    WizardForm.ComponentsList.Checked[1] := false;
+    Wizardform.ComponentsList.ItemEnabled[1] := false;
+  end
+  else
+  begin
+    WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver';
+  end;
+end;
+
+
+procedure TypesChanged(Sender: TObject);
+begin
+  { First let Inno Setup update the components selection }
+  OriginalTypesChangeListener(Sender);
+  { And then check for changes }
+  UpdateComponentsDependingOnDokany();
+end;
+
+
+procedure InitializeWizard();
+begin
+  OriginalTypesChangeListener := WizardForm.TypesCombo.OnChange;
+  WizardForm.TypesCombo.OnChange := @TypesChanged;
+  UpdateComponentsDependingOnDokany();
+end;
+
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  DokanComponentSelected: Boolean;
+  DokanPresentOnSystem: Boolean;
+  OutdatedAnswer : Integer;
+begin
+  Result := True;
+  if ( CurPageID = wpSelectComponents) then
+  begin
+    DokanPresentOnSystem := (ReadDokanVersion <> -1);
+    DokanComponentSelected := WizardIsComponentSelected('dokan');
+    if DokanPresentOnSystem then begin 
+      if DokanComponentSelected then begin 
+        // we already now that it must be outdated (see UpdateComponentsDependingOnDokany) -> block installation
+        MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via the "Apps & Feature" settings and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
+        Result := False
+      end else begin
+        //TODO: inform user about risk
+        OutdatedAnswer := MsgBox('We detected an outdated Dokany version on your system, but it was not selected to update it. Cryptomator will most probably be able to load it, but its usage might result in errors. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
+        if OutdatedAnswer = IDNO then begin
+          Result := False; 
+        end;
+      end;
+    end;
+  end;
+end;
+
