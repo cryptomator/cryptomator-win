@@ -180,6 +180,7 @@ begin
   PatchProviderOrderRegValue();
 end;
 
+
 // Dokan section
 
 { Calling DokanVersion() function from the dll. If it does not exists, an exception is thrown. The version number returned contains three digits.}
@@ -240,8 +241,8 @@ end;
 
 procedure UpdateComponentsDependingOnDokany();
 begin
-  if IsInstalledDokanVersionSufficient() then begin
-    WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (up-to-date)';
+  if ((not IsInstalledDokanVersionSufficient()) and (ReadDokanVersion <> -1)) then begin
+    WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (outdated)';
   end else begin
     WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver';
   end;
@@ -278,12 +279,12 @@ begin
     if DokanPresentOnSystem then begin 
       if DokanComponentSelected then begin 
         if not IsInstalledDokanVersionSufficient() then begin
-          MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via "Apps & Feature" and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
+          MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via "Apps & features" and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
           Result := False
         end;
       end else begin
         //inform user about risk
-        OutdatedAnswer := MsgBox('We detected Dokany is already present on your system, but it was not selected for an update check. Cryptomator will be able to use it, but its usage might lead to errors. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
+        OutdatedAnswer := MsgBox('We detected Dokany is already installed on your system, but it is not a selected component. Cryptomator will be able to use it, but it might be an outdated version missing important bug fixes and improvements. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
         if OutdatedAnswer = IDNO then begin
           Result := False; 
         end;
