@@ -71,14 +71,12 @@ Source: "Cryptomator\Cryptomator.exe"; DestDir: "{app}"; Flags: ignoreversion si
 Source: "Cryptomator\*.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs signonce
 Source: "Cryptomator\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
-Source: "vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall nocompression; Components: dokan
 
 [Icons]
 Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{app}\Cryptomator.ico"
 
 [Run]
-Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/norestart /q /chainingpackage ADMINDEPLOYMENT"; StatusMsg: "Installing VC++ Redistributable 2019..."; Flags: waituntilterminated; Components: dokan; Check: not VCRedistInstalled
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; 
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"""; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; Check: not IsInstalledDokanVersionSufficient;
 Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; BeforeInstall: PrepareForWebDAV; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
@@ -88,13 +86,13 @@ const
   RegNetworkProviderOrderSubkey = 'SYSTEM\CurrentControlSet\Control\NetworkProvider\Order';
   RegProviderOrderValueName = 'ProviderOrder';
   RegWebClientValue = 'webclient';
-  RegVcRedistKey = 'SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14';
-  RegDokanDisplayName = 'Dokan Library';
   BundledDokanVersion = '{#BundledDokanVersion}';
   
 var
   OriginalTypesChangeListener: TNotifyEvent;
-  LastKnownDokanRegistrySubKeyName: String;
+
+
+// Misc section
 
 function StrSplit(Text: String; Separator: String): TArrayOfString;
 var
@@ -120,41 +118,9 @@ begin
   Result := Dest
 end;
 
-function VCRedistInstalled(): Boolean;
-var
-  VersionString: String;
-  Version: TArrayOfString;
-  MajorVersion, MinorVersion, BuildVersion: Integer;
-  FoundRequiredVersion: Boolean;
-begin
-  Result := False;
-  if RegKeyExists(HKEY_LOCAL_MACHINE, RegVcRedistKey) then
-  begin
-    if RegQueryStringValue(HKEY_LOCAL_MACHINE, RegVcRedistKey, 'Version', VersionString)then
-	begin
-	  Version := StrSplit(VersionString, '.');
-	  if GetArrayLength(Version) >= 3 then
-	  begin
-	    MajorVersion := StrToIntDef(Version[0], 0);
-		MinorVersion := StrToIntDef(Version[1], 0);
-		BuildVersion := StrToIntDef(Version[2], 0);
-		if (MajorVersion > 14) then
-		begin
-		  FoundRequiredVersion := true;
-		end
-		else if (MajorVersion = 14) and (MinorVersion > 21) then
-		begin
-		  FoundRequiredVersion := true;
-		end
-		else if (MajorVersion = 14) and (MinorVersion = 21) and (BuildVersion >= 27702) then
-		begin
-		  FoundRequiredVersion := true;
-		end;
-	  end;
-    end;   
-  end;
-  Result := FoundRequiredVersion;
-end;
+
+
+// System section
 
 procedure PatchProviderOrderRegValue();
 var
@@ -165,26 +131,23 @@ var
 begin
   OldValue := ExpandConstant('{reg:HKLM\' + RegNetworkProviderOrderSubkey + ',' + RegProviderOrderValueName + '|}');
   Values := StrSplit(OldValue, ',');
-  if (GetArrayLength(Values) = 1) and (CompareStr(Values[0], '') = 0) then
-  begin
+  if (GetArrayLength(Values) = 1) and (CompareStr(Values[0], '') = 0) then begin
     RegWriteStringValue(HKEY_LOCAL_MACHINE, RegNetworkProviderOrderSubkey, RegProviderOrderValueName, RegWebClientValue);
   end
   else
   begin
     WebClientValueFound := False;
-    for i := 0 to GetArrayLength(Values) - 1 do
-    begin
-      if CompareStr(RegWebClientValue, Values[i]) = 0 then
-      begin
+    for i := 0 to GetArrayLength(Values) - 1 do begin
+      if CompareStr(RegWebClientValue, Values[i]) = 0 then begin
         WebClientValueFound := True;
       end;
     end;
-    if not WebClientValueFound then
-    begin
+    if not WebClientValueFound then begin
       RegWriteStringValue(HKEY_LOCAL_MACHINE, RegNetworkProviderOrderSubkey, RegProviderOrderValueName, RegWebClientValue + ',' + OldValue);
     end;
   end;
 end;
+
 
 procedure PatchHostsFile();
 var
@@ -210,6 +173,7 @@ begin
   end;
 end;
 
+
 procedure PrepareForWebDAV();
 begin
   PatchHostsFile();
@@ -217,51 +181,21 @@ begin
 end;
 
 
-{ If Dokany is installed and its installation has a registry entry, this function returns the version string stored in the registry. If there is no registry entry for Dokany, it returns the empty string.}
-function ReadRegisteredDokanVersion(): String;
-var
-  I: Integer;
-  Names: TArrayOfString;
-  RegKey: String;
-  RegValue: String;
-  TruncatedName: String;
-  InstalledDokanVersion: String;
-begin
-  Result := '';
-  RegValue := '';
+// Dokan section
 
-  { Check if we already found the registry location}
-  RegKey := LastKnownDokanRegistrySubKeyName
-  if (RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'DisplayName', RegValue)) then
-  begin
-    TruncatedName := Copy(RegValue, 1, Length(RegDokanDisplayName))
-    if(CompareStr(TruncatedName, RegDokanDisplayName) = 0) then 
+{ Calling DokanVersion() function from the dll. If it does not exists, an exception is thrown. The version number returned contains three digits.}
+function DokanVersion (): Integer;
+external 'DokanVersion@dokan1.dll stdcall setuponly delayload';
+
+
+{ Returns the Versionnumber from the installed Dokan library or returns -1, if this is not possible.}
+function ReadDokanVersion(): Int64;
+begin
+  try
+    Result := DokanVersion();
+  except
     begin
-      if (RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'FullVersion', InstalledDokanVersion)) then
-      begin
-        Result := InstalledDokanVersion;
-      end;
-    end;
-  end
-  else if RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall', Names) then
-  begin {Otherwise loop over all subkeys of the uninstall key}
-    for I := 0 to GetArrayLength(Names) - 1 do
-    begin
-      RegKey := 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\' + Names[I];
-      if (RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'DisplayName', RegValue)) then
-      begin
-        TruncatedName := Copy(RegValue, 1, Length(RegDokanDisplayName))
-        if(CompareStr(TruncatedName, RegDokanDisplayName) = 0) then 
-        begin
-          //We found it!
-          LastKnownDokanRegistrySubKeyName := RegKey;
-          if (RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'FullVersion', InstalledDokanVersion)) then
-          begin
-            Result := InstalledDokanVersion;
-          end;
-          break;
-        end;
-      end;
+    Result := -1;
     end;
   end;
 end;
@@ -270,80 +204,50 @@ end;
 { Compares an (possibly) installed Dokan version with the bundled one and returns true if the installed on is equal or newer.}
 function IsInstalledDokanVersionSufficient(): Boolean;
 var
-  InstalledVersionString: String;
-  InstalledVersion: TArrayOfString;
-  BundledVersion: TArrayOfString;
-  IMajorVersion, IMinorVersion, IPatchVersion: Integer;
-  BMajorVersion, BMinorVersion, BPatchVersion: Integer;
-  FoundSufficientVersion: Boolean;
-  TestVar : Integer;
+  InstalledVersion: Int64;
+  BundledVersion: Int64;
+  TmpString: String;
 begin
-	FoundSufficientVersion := False;
-  InstalledVersionString := ReadRegisteredDokanVersion();
-  if (Length(InstalledVersionString) > 0) then
-  begin
-    BundledVersion := StrSplit(Trim(BundledDokanVersion), '.');
-	  InstalledVersion := StrSplit(Trim(InstalledVersionString), '.');
-	  if GetArrayLength(InstalledVersion) >= 3 then
-	  begin
-	    IMajorVersion := StrToIntDef(InstalledVersion[0], 0);
-		  IMinorVersion := StrToIntDef(InstalledVersion[1], 0);
-		  IPatchVersion := StrToIntDef(InstalledVersion[2], 0);
-	    BMajorVersion := StrToIntDef(BundledVersion[0], 0);
-		  BMinorVersion := StrToIntDef(BundledVersion[1], 0);
-		  BPatchVersion := StrToIntDef(BundledVersion[2], 0);
-      if (IMajorVersion > BMajorVersion) then
-      begin
-        FoundSufficientVersion := true;
-      end
-      else if (IMajorVersion = BMajorVersion) and (IMinorVersion > BMinorVersion) then
-      begin
-        FoundSufficientVersion := true;
-      end
-      else if (IMajorVersion = BMajorVersion) and (IMinorVersion = BMinorVersion) and (IPatchVersion >= BPatchVersion) then
-      begin
-        FoundSufficientVersion := true;
-      end;
+	Result := False;
+  InstalledVersion := ReadDokanVersion();
+  if InstalledVersion >= 0 then begin
+    TmpString := Trim(BundledDokanVersion);
+    StringChangeEx(TmpString, '.', '',False);
+    Delete(TmpString,4,1000); //we rely on that major, minor and patch never become two digit numbers
+    BundledVersion := StrToInt64Def(TmpString, 9223372036854775806); //if this fails for whatever reason we just say we have the better version
+    if InstalledVersion >= BundledVersion then begin
+      Result := True;
     end;
   end;
-  Result := FoundSufficientVersion;
 end;
 
 
-function NextButtonClick(CurPageID: Integer): Boolean;
+// Wizard section
+
+function InitializeSetup(): Boolean;
 var
-  DokanDriverLocation: String;
+  Version: TWindowsVersion;
+  S: String;
 begin
-  Result := True;
-  DokanDriverLocation := ExpandConstant('{sys}\drivers\dokan1.sys');
-  if (CurPageID = wpSelectComponents) and WizardIsComponentSelected('dokan') and FileExists(DokanDriverLocation) and (not IsInstalledDokanVersionSufficient()) then
-  begin
-    {block installation if dokan is installed and old version detected}
-	MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via the "Apps & Feature" settings and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
-	Result := False;
-  end
-  else
-  begin
-    Result := True;
+  GetWindowsVersionEx(Version);
+  
+  // Show warning for legacy Windows versions
+  if Version.Major < 10 then begin
+    SuppressibleMsgBox('This version of Windows is not officially supported. Proceed at your own risk.', mbInformation, MB_OK, IDOK);
   end;
+  Result := True;
 end;
 
 
 procedure UpdateComponentsDependingOnDokany();
 begin
-  if IsInstalledDokanVersionSufficient() then
-  begin
-    WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (Already Installed)';
-    WizardForm.ComponentsList.Checked[1] := false;
-    Wizardform.ComponentsList.ItemEnabled[1] := false;
-  end
-  else
-  begin
+  if ((not IsInstalledDokanVersionSufficient()) and (ReadDokanVersion <> -1)) then begin
+    WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver (outdated)';
+  end else begin
     WizardForm.ComponentsList.ItemCaption[1] := 'Dokan File System Driver';
-    WizardForm.ComponentsList.Checked[1] := true;
-    Wizardform.ComponentsList.ItemEnabled[1] := true;
   end;
 end;
+
 
 procedure TypesChanged(Sender: TObject);
 begin
@@ -362,20 +266,30 @@ begin
 end;
 
 
-function InitializeSetup(): Boolean;
+function NextButtonClick(CurPageID: Integer): Boolean;
 var
-  Version: TWindowsVersion;
-  S: String;
+  DokanComponentSelected: Boolean;
+  DokanPresentOnSystem: Boolean;
+  OutdatedAnswer : Integer;
 begin
-  GetWindowsVersionEx(Version);
-  
-  // Show warning for legacy Windows versions
-  if Version.Major < 10 then
-  begin
-    SuppressibleMsgBox('This version of Windows is not officially supported. Proceed at your own risk.', mbInformation, MB_OK, IDOK);
-  end;
-  
-  {We initialize the last known dokan registry entry to "none"}
-  LastKnownDokanRegistrySubKeyName := '';
   Result := True;
+  if ( CurPageID = wpSelectComponents) then begin
+    DokanPresentOnSystem := (ReadDokanVersion <> -1);
+    DokanComponentSelected := WizardIsComponentSelected('dokan');
+    if DokanPresentOnSystem then begin 
+      if DokanComponentSelected then begin 
+        if not IsInstalledDokanVersionSufficient() then begin
+          MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via "Apps & features" and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
+          Result := False
+        end;
+      end else begin
+        //inform user about risk
+        OutdatedAnswer := MsgBox('We detected Dokany is already installed on your system, but it is not a selected component. Cryptomator will be able to use it, but it might be an outdated version missing important bug fixes and improvements. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
+        if OutdatedAnswer = IDNO then begin
+          Result := False; 
+        end;
+      end;
+    end;
+  end;
 end;
+
