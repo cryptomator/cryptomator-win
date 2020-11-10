@@ -67,6 +67,7 @@ Write-Output "Create application dir: ..."
   --copyright "(C) 2016 - 2020 Skymatic GmbH" `
   --app-version $upstreamVersion `
   --icon resources/app/Cryptomator.ico `
+  --java-options "-Dfile.encoding=`"utf-8`"" `
   --java-options "-Dcryptomator.logDir=`"~/AppData/Roaming/Cryptomator`"" `
   --java-options "-Dcryptomator.settingsPath=`"~/AppData/Roaming/Cryptomator/settings.json`"" `
   --java-options "-Dcryptomator.ipcPortPath=`"~/AppData/Roaming/Cryptomator/ipcPort.bin`"" `
