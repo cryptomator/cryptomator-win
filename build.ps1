@@ -21,7 +21,7 @@ if (-not (Test-Path $Env:JAVA_HOME)) {
 }
 
 if(-not ($dokanInstallerVersion -eq [System.Diagnostics.FileVersionInfo]::GetVersionInfo(".\resources\app\dlls\dokan1.dll").FileVersion)){
-    Write-Output "The Dokany version of the installer does not match the signed Dokan-DLL. Please update one of them such they belong to the same release."
+    Write-Output "The Dokany version of the installer does not match the Dokan-DLL. Please update one of them such they belong to the same release."
     exit 1;
 }
 
