@@ -61,9 +61,10 @@ Root: HKCR; Subkey: ".cryptomator"; ValueType: string;  ValueName: ""; ValueData
 Root: HKCR; Subkey: "CryptomatorMasterkeyFile"; ValueType: string;  ValueName: ""; ValueData: "Cryptomator Masterkey File"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "CryptomatorMasterkeyFile\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
 Root: HKCR; Subkey: "CryptomatorMasterkeyFile\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Cryptomator.exe"" ""%1"""
-Root: HKCR; Subkey: ".c9r"; ValueType: string;  ValueName: ""; ValueData: "EncryptedCryptomatorVaultFile"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "EncryptedCryptomatorVaultFile"; ValueType: string;  ValueName: ""; ValueData: "Encrypted Cryptomator vault file"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "EncryptedCryptomatorVaultFile\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
+Root: HKCR; Subkey: ".c9r"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorEncryptedData"; Flags: uninsdeletekey
+Root: HKCR; Subkey: ".c9s"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorEncryptedData"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "CryptomatorEncryptedData"; ValueType: string;  ValueName: ""; ValueData: "Cryptomator Encrypted Data"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "CryptomatorEncryptedData\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
 Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run\"; ValueType: none; ValueName: "Cryptomator"; Flags: dontcreatekey deletevalue
 
 [InstallDelete]
