@@ -1,19 +1,26 @@
 param(
   [string]$upstreamVersion = "continuous",
+  [string]$exeVersion = "0.0.1",
   [string]$signtool = "signtool sign /sha1 FF52240075AD7D14AF25629FDF69635357C7D14B /tr http://timestamp.digicert.com /fd sha256 /d `$qCryptomator`$q `$f"
 )
 
 $buildDir = Split-Path -Parent $PSCommandPath
-$buildVersion = & git rev-list --count HEAD
 
 Write-Output "`$upstreamVersion=$upstreamVersion"
-Write-Output "`$buildVersion=$buildVersion"
+Write-Output "`$exeVersion=$exeVersion"
 Write-Output "`$signtool=$signtool"
 Write-Output "`$buildDir=$buildDir"
 Write-Output "`$Env:JAVA_HOME=$Env:JAVA_HOME"
 
+# determine dokan installer version
 $dokanInstallerVersion = & $PSScriptRoot"\Get-MSIFileInformation.ps1" .\resources\innosetup\Dokan_x64.msi "ProductVersion"
 Write-Output "`$dokanInstallerVersion=$dokanInstallerVersion"
+
+# determine revision number
+$commitInfo = Invoke-WebRequest -Method Head "https://api.github.com/repos/cryptomator/cryptomator/commits?per_page=1&sha=${upstreamVersion}"
+$regex = $commitInfo.Headers.Link | Select-String -Pattern 'page=(\d{4,})'
+$revision = $regex.Matches.Groups[1].Value
+Write-Output "`$revision=$revision"
 
 if (-not (Test-Path $Env:JAVA_HOME)) {
     Write-Output "JAVA_HOME not set or does not exist: $Env:JAVA_HOME"
@@ -64,8 +71,8 @@ Write-Output "Create application dir: ..."
   --dest app `
   --name Cryptomator `
   --vendor "Skymatic GmbH" `
-  --copyright "(C) 2016 - 2020 Skymatic GmbH" `
-  --app-version $upstreamVersion `
+  --copyright "(C) 2016 - 2021 Skymatic GmbH" `
+  --app-version "${exeVersion}.${revision}" `
   --icon resources/app/Cryptomator.ico `
   --java-options "-Dfile.encoding=`"utf-8`"" `
   --java-options "-Dcryptomator.logDir=`"~/AppData/Roaming/Cryptomator`"" `
@@ -73,7 +80,7 @@ Write-Output "Create application dir: ..."
   --java-options "-Dcryptomator.ipcPortPath=`"~/AppData/Roaming/Cryptomator/ipcPort.bin`"" `
   --java-options "-Dcryptomator.keychainPath=`"~/AppData/Roaming/Cryptomator/keychain.json`"" `
   --java-options "-Dcryptomator.mountPointsDir=`"~/Cryptomator`"" `
-  --java-options "-Dcryptomator.buildNumber=`"exe-$buildVersion`"" `
+  --java-options "-Dcryptomator.buildNumber=`"exe-${revision}`"" `
   --java-options "-Xss2m" `
   --java-options "-Xmx512m" `
   --main-class org.cryptomator.launcher.Cryptomator `
