@@ -19,8 +19,10 @@ Write-Output "`$dokanInstallerVersion=$dokanInstallerVersion"
 # determine revision number
 $commitInfo = Invoke-WebRequest -Method Head "https://api.github.com/repos/cryptomator/cryptomator/commits?per_page=1&sha=${upstreamVersion}"
 $regex = $commitInfo.Headers.Link | Select-String -Pattern 'page=(\d{4,})'
-$revision = $regex.Matches.Groups[1].Value
-Write-Output "`$revision=$revision"
+$upstreamRevision = $regex.Matches.Groups[1].Value
+$installerRevision = & git rev-list --count HEAD
+$revision = "${upstreamRevision}.${installerRevision}"
+Write-Output "`$revision=${revision}"
 
 if (-not (Test-Path $Env:JAVA_HOME)) {
     Write-Output "JAVA_HOME not set or does not exist: $Env:JAVA_HOME"
