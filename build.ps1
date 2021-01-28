@@ -38,13 +38,12 @@ if(-not ($dokanInstallerVersion -eq [System.Diagnostics.FileVersionInfo]::GetVer
 Remove-Item -Recurse -ErrorAction Ignore -Force buildkit.zip, app, libs, runtimeImage
 
 # configure stuff
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$ProgressPreference = 'SilentlyContinue' # disables Invoke-WebRequest's progress bar, which slows down downloads to a few bytes/s
 
 # download and extract buildkit
 $buildkitUrl = "https://github.com/cryptomator/cryptomator/releases/download/${upstreamVersion}/buildkit-win.zip"
-$wc = New-Object System.Net.WebClient
 Write-Output "Downloading ${buildkitUrl}..."
-$wc.Downloadfile($buildkitUrl, "buildkit.zip")
+Invoke-WebRequest $buildkitUrl -OutFile "buildkit.zip"
 Expand-Archive -Path buildkit.zip -DestinationPath . -Force
 if (-not (Test-Path libs)) {
     Write-Output "libs/ does not exist. Buildkit damaged?"
