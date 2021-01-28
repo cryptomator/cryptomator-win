@@ -4,6 +4,9 @@ param(
   [string]$signtool = "signtool sign /sha1 FF52240075AD7D14AF25629FDF69635357C7D14B /tr http://timestamp.digicert.com /fd sha256 /d `$qCryptomator`$q `$f"
 )
 
+# configure stuff
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$ProgressPreference = 'SilentlyContinue' # disables Invoke-WebRequest's progress bar, which slows down downloads to a few bytes/s
 $buildDir = Split-Path -Parent $PSCommandPath
 
 Write-Output "`$upstreamVersion=$upstreamVersion"
@@ -36,9 +39,6 @@ if(-not ($dokanInstallerVersion -eq [System.Diagnostics.FileVersionInfo]::GetVer
 
 # cleanup
 Remove-Item -Recurse -ErrorAction Ignore -Force buildkit.zip, app, libs, runtimeImage
-
-# configure stuff
-$ProgressPreference = 'SilentlyContinue' # disables Invoke-WebRequest's progress bar, which slows down downloads to a few bytes/s
 
 # download and extract buildkit
 $buildkitUrl = "https://github.com/cryptomator/cryptomator/releases/download/${upstreamVersion}/buildkit-win.zip"
