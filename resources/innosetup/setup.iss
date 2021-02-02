@@ -62,24 +62,24 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; Va
 Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run\"; ValueType: none; ValueName: "Cryptomator"; Flags: dontcreatekey deletevalue
 
 ; .cryptomator filetype: Add extension, MIME type, perceived type, description, icon and command
-Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorMasterkeyFile"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorMasterkeyFile"
 Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: "Content Type"; ValueData: "application/x-vnd.cryptomator.vault-metadata"
 Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: "PerceivedType"; ValueData: "text"
 
-Root: HKA; Subkey: "Software\Classes\CryptomatorMasterkeyFile"; ValueType: string;  ValueName: ""; ValueData: "Cryptomator Masterkey File"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\CryptomatorMasterkeyFile"; ValueType: string;  ValueName: ""; ValueData: "Cryptomator Masterkey File"; Flags: deletekey uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\CryptomatorMasterkeyFile\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
 Root: HKA; Subkey: "Software\Classes\CryptomatorMasterkeyFile\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Cryptomator.exe"" ""%1"""
 
 ; .c9r & .c9s filetypes: Add extension, MIME type, perceived type, description and icon for each
-Root: HKA; Subkey: "Software\Classes\.c9r"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorEncryptedData"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\.c9r"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorEncryptedData"
 Root: HKA; Subkey: "Software\Classes\.c9r"; ValueType: string; ValueName: "Content Type"; ValueData: "application/x-vnd.cryptomator.encrypted-data"
 Root: HKA; Subkey: "Software\Classes\.c9r"; ValueType: string; ValueName: "PerceivedType"; ValueData: "system"
 
-Root: HKA; Subkey: "Software\Classes\.c9s"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorEncryptedData"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\.c9s"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorEncryptedData"
 Root: HKA; Subkey: "Software\Classes\.c9s"; ValueType: string; ValueName: "Content Type"; ValueData: "application/x-vnd.cryptomator.encrypted-data"
 Root: HKA; Subkey: "Software\Classes\.c9s"; ValueType: string; ValueName: "PerceivedType"; ValueData: "system"
 
-Root: HKA; Subkey: "Software\Classes\CryptomatorEncryptedData"; ValueType: string;  ValueName: ""; ValueData: "Cryptomator Encrypted Data"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\CryptomatorEncryptedData"; ValueType: string;  ValueName: ""; ValueData: "Cryptomator Encrypted Data"; Flags: deletekey uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\CryptomatorEncryptedData\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
 
 [InstallDelete]
