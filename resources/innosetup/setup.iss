@@ -4,6 +4,8 @@
 #define AppVersion GetEnv("CRYPTOMATOR_VERSION")
 #define FileInfoVersion GetFileVersion("Cryptomator/Cryptomator.exe")
 #define BundledDokanVersion GetEnv("DOKAN_VERSION")
+;Version of the Programmatic Identifier the app uses. Windows extra, not the same as application version. 
+#define ProgIDVersion 1 
 
 SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
 AppId=Cryptomator
@@ -57,14 +59,34 @@ Name: "webdav"; Description: "WebDAV system configuration"; Types: full; ExtraDi
 
 [Registry]
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; ValueType: dword; ValueName: "FileSizeLimitInBytes"; ValueData: "$ffffffff"; Components: webdav
-Root: HKCR; Subkey: ".cryptomator"; ValueType: string;  ValueName: ""; ValueData: "CryptomatorMasterkeyFile"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "CryptomatorMasterkeyFile"; ValueType: string;  ValueName: ""; ValueData: "Cryptomator Masterkey File"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "CryptomatorMasterkeyFile\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
-Root: HKCR; Subkey: "CryptomatorMasterkeyFile\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Cryptomator.exe"" ""%1"""
-Root: HKCR; Subkey: ".c9r"; ValueType: string;  ValueName: ""; ValueData: "EncryptedCryptomatorVaultFile"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "EncryptedCryptomatorVaultFile"; ValueType: string;  ValueName: ""; ValueData: "Encrypted Cryptomator vault file"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "EncryptedCryptomatorVaultFile\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
+
+; Remove legacy AutoStart entry; see: https://github.com/cryptomator/cryptomator-win/issues/33
 Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run\"; ValueType: none; ValueName: "Cryptomator"; Flags: dontcreatekey deletevalue
+
+; Remove legacy ProgIDs from before 1.5.12
+Root: HKCR; Subkey: "CryptomatorMasterkeyFile"; Flags: dontcreatekey deletekey
+Root: HKCR; Subkey: "CryptomatorEncryptedData"; Flags: dontcreatekey deletekey
+
+; .cryptomator filetype: Add extension, MIME type, perceived type, description, icon and command
+Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: ""; ValueData: "Cryptomator.MasterkeyFile.{#ProgIDVersion}"
+Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: "Content Type"; ValueData: "application/x-vnd.cryptomator.vault-metadata"
+Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: "PerceivedType"; ValueData: "text"
+
+Root: HKA; Subkey: "Software\Classes\Cryptomator.MasterkeyFile.{#ProgIDVersion}"; ValueType: string; ValueName: ""; ValueData: "Cryptomator Masterkey File"; Flags: deletekey uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Cryptomator.MasterkeyFile.{#ProgIDVersion}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
+Root: HKA; Subkey: "Software\Classes\Cryptomator.MasterkeyFile.{#ProgIDVersion}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Cryptomator.exe"" ""%1"""
+
+; .c9r & .c9s filetypes: Add extension, MIME type, perceived type, description and icon for each
+Root: HKA; Subkey: "Software\Classes\.c9r"; ValueType: string; ValueName: ""; ValueData: "Cryptomator.EncryptedData.{#ProgIDVersion}"
+Root: HKA; Subkey: "Software\Classes\.c9r"; ValueType: string; ValueName: "Content Type"; ValueData: "application/x-vnd.cryptomator.encrypted-data"
+Root: HKA; Subkey: "Software\Classes\.c9r"; ValueType: string; ValueName: "PerceivedType"; ValueData: "system"
+
+Root: HKA; Subkey: "Software\Classes\.c9s"; ValueType: string; ValueName: ""; ValueData: "Cryptomator.EncryptedData.{#ProgIDVersion}"
+Root: HKA; Subkey: "Software\Classes\.c9s"; ValueType: string; ValueName: "Content Type"; ValueData: "application/x-vnd.cryptomator.encrypted-data"
+Root: HKA; Subkey: "Software\Classes\.c9s"; ValueType: string; ValueName: "PerceivedType"; ValueData: "system"
+
+Root: HKA; Subkey: "Software\Classes\Cryptomator.EncryptedData.{#ProgIDVersion}"; ValueType: string; ValueName: ""; ValueData: "Cryptomator Encrypted Data"; Flags: deletekey uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Cryptomator.EncryptedData.{#ProgIDVersion}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
 
 [InstallDelete]
 Type: filesandordirs; Name: "{app}\app"
