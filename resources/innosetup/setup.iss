@@ -60,6 +60,9 @@ Name: "webdav"; Description: "WebDAV system configuration"; Types: full; ExtraDi
 [Registry]
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; ValueType: dword; ValueName: "FileSizeLimitInBytes"; ValueData: "$ffffffff"; Components: webdav
 
+; Remove legacy AutoStart entry; see: https://github.com/cryptomator/cryptomator-win/issues/33
+Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run\"; ValueType: none; ValueName: "Cryptomator"; Flags: dontcreatekey deletevalue
+
 ; Remove legacy ProgID introduced in 1.5.12-beta1
 Root: HKCR; Subkey: "EncryptedCryptomatorVaultFile"; Flags: dontcreatekey deletekey
 
