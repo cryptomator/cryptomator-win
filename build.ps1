@@ -81,6 +81,7 @@ Write-Output "Create application dir: ..."
   --java-options "-Dcryptomator.ipcPortPath=`"~/AppData/Roaming/Cryptomator/ipcPort.bin`"" `
   --java-options "-Dcryptomator.keychainPath=`"~/AppData/Roaming/Cryptomator/keychain.json`"" `
   --java-options "-Dcryptomator.mountPointsDir=`"~/Cryptomator`"" `
+  --java-options "-Dcryptomator.showTrayIcon=true" `
   --java-options "-Dcryptomator.buildNumber=`"exe-${revision}`"" `
   --java-options "-Xss2m" `
   --java-options "-Xmx512m" `
