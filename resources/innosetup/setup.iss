@@ -63,9 +63,6 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Services\WebClient\Parameters"; Va
 ; Remove legacy AutoStart entry; see: https://github.com/cryptomator/cryptomator-win/issues/33
 Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run\"; ValueType: none; ValueName: "Cryptomator"; Flags: dontcreatekey deletevalue
 
-; Remove legacy ProgID introduced in 1.5.12-beta1
-Root: HKCR; Subkey: "EncryptedCryptomatorVaultFile"; Flags: dontcreatekey deletekey
-
 ; Remove legacy ProgIDs from before 1.5.12
 Root: HKCR; Subkey: "CryptomatorMasterkeyFile"; Flags: dontcreatekey deletekey
 Root: HKCR; Subkey: "CryptomatorEncryptedData"; Flags: dontcreatekey deletekey
