@@ -4,7 +4,8 @@
 #define AppVersion GetEnv("CRYPTOMATOR_VERSION")
 #define FileInfoVersion GetFileVersion("Cryptomator/Cryptomator.exe")
 #define BundledDokanVersion GetEnv("DOKAN_VERSION")
-#define ProgIDVersion 1
+;Version of the Programmatic Identifier the app uses. Windows extra, not the same as application version. 
+#define ProgIDVersion 1 
 
 SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
 AppId=Cryptomator
