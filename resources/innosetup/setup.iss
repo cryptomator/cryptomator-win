@@ -73,8 +73,8 @@ Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName
 Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: "PerceivedType"; ValueData: "text"
 
 Root: HKA; Subkey: "Software\Classes\Cryptomator.MasterkeyFile.{#ProgIDVersion}"; ValueType: string; ValueName: ""; ValueData: "Cryptomator Masterkey File"; Flags: deletekey uninsdeletekey
-Root: HKA; Subkey: "Software\Classes\Cryptomator.MasterkeyFile.{#ProgIDVersion}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
-Root: HKA; Subkey: "Software\Classes\Cryptomator.MasterkeyFile.{#ProgIDVersion}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Cryptomator.exe"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\Cryptomator.MasterkeyFile.{#ProgIDVersion}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"; Flags: deletekey uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Cryptomator.MasterkeyFile.{#ProgIDVersion}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\Cryptomator.exe"" ""%1"""; Flags: deletekey uninsdeletekey
 
 ; .c9r & .c9s filetypes: Add extension, MIME type, perceived type, description and icon for each
 Root: HKA; Subkey: "Software\Classes\.c9r"; ValueType: string; ValueName: ""; ValueData: "Cryptomator.EncryptedData.{#ProgIDVersion}"
@@ -86,7 +86,7 @@ Root: HKA; Subkey: "Software\Classes\.c9s"; ValueType: string; ValueName: "Conte
 Root: HKA; Subkey: "Software\Classes\.c9s"; ValueType: string; ValueName: "PerceivedType"; ValueData: "system"
 
 Root: HKA; Subkey: "Software\Classes\Cryptomator.EncryptedData.{#ProgIDVersion}"; ValueType: string; ValueName: ""; ValueData: "Cryptomator Encrypted Data"; Flags: deletekey uninsdeletekey
-Root: HKA; Subkey: "Software\Classes\Cryptomator.EncryptedData.{#ProgIDVersion}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"
+Root: HKA; Subkey: "Software\Classes\Cryptomator.EncryptedData.{#ProgIDVersion}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\Cryptomator.exe,0"; Flags: deletekey uninsdeletekey
 
 [InstallDelete]
 Type: filesandordirs; Name: "{app}\app"
