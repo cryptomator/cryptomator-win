@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include>
+	<?define ProductName = "MyTestApp" ?>
+	<?define ProductVersion = "1.0.0.0" ?>
+	<?define ProductManufacturer = "Cryptobot" ?>
+	<?define Src = ".\Cryptomator" ?>
+</Include>

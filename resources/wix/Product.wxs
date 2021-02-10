@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <!-- wix tips and tricks https://stackoverflow.com/questions/471424/wix-tricks-and-tips -->
+  <!-- about varaibles and usage: https://stackoverflow.com/questions/8400868/referencing-a-wixvariable-defined-in-a-wix-library-project-from-a-wix-setup-proj -->
+
+  <?include $(sys.CURRENTDIR)/properties.wxi?>
+
+  <Product Id="*" Name="$(var.ProductName)" Language="1033" Version="1.0.0.0" Manufacturer="$(var.ProductManufacturer)" UpgradeCode="c937ca29-532b-4d43-b0f0-94c5de1e72d6">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" /> <!-- Usage of 'Platform' attr is discouraged -> use -arch in candle.exe call instead-->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of $(var.ProductName) is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="ProductFeature" Title="Full" Level="1">
+      <!-- generated from Cryptomator sources and the heat tool -->
+      <ComponentGroupRef Id="MainApp" />
+      <ComponentGroupRef Id="ExeRegistryShortcuts"/>
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="AppRootDir" Name="$(var.ProductName)">
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+          <Directory Id="AppProgramMenuFolder" Name="$(var.ProductName)"/>
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ExeRegistryShortcuts">
+      <!-- add jpackaged generated EXE separatly to also create shortcuts. Otherwise the shortcuts cannot reference the exe.-->
+      <!-- with heatPostProcessing.xsl it is ensured that in the heat generated file this file is removed. -->
+      <Component Id="ExeAndShortcuts" Directory="AppRootDir" Guid="FD75D437-91C7-4524-8E42-FE7EE95A2973">
+        <File Id="$(var.ProductName).exe" Name="$(var.ProductName).exe" Source="$(var.Src)\Cryptomator.exe" />
+        <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="ApplicationShortcut" Guid="*" Directory="AppProgramMenuFolder">
+        <Shortcut Id="ApplicationStartMenuShortcut"
+                  Name="$(var.ProductName)"
+                  Description="My Test App."
+                  Target="[#$(var.ProductName).exe]"
+                  WorkingDirectory="AppRootDir"
+                  Directory="AppProgramMenuFolder"/>
+        <Shortcut Id="ApplicationDesktopShortcut"
+                  Name="$(var.ProductName)"
+                  Description="My Test App."
+                  Target="[#$(var.ProductName).exe]"
+                  WorkingDirectory="AppRootDir"
+                  Directory="DesktopFolder"/>
+        <RemoveFolder Id="CleanUpShortCut" Directory="AppProgramMenuFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+ </Wix>

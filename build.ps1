@@ -92,9 +92,36 @@ Write-Output "Create application dir: ..."
 & 'attrib' -r 'app/Cryptomator/Cryptomator.exe'
 Copy-Item resources/app/dlls/* app/Cryptomator/
 
+
+
+
+#
 # build installer
-Copy-Item -Recurse resources/innosetup/* app/
+Copy-Item -Recurse resources/wix/* app/
 Set-Location app/
-$env:CRYPTOMATOR_VERSION = "$upstreamVersion"
-$env:DOKAN_VERSION = "$dokanInstallerVersion"
-& 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' setup.iss /Qp "/sdefault=`"$signtool`""
+#0. Install wix toolkit
+# https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm
+$wixToolsUrl = "https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip"
+Write-Output "Downloading wix tools set from ${wixToolsUrl}..."
+Invoke-WebRequest $wixToolsUrl -OutFile "wixTools.zip"
+Expand-Archive -Path wixTools.zip -DestinationPath ./wix -Force
+
+# The following paths depend on the current directory
+$heat = ".\wix\heat.exe"
+$candle = ".\wix\candle.exe"
+$light = ".\wix\light.exe"
+#3. Use heat to extract module
+# Note: the used names here are deeply tangled with 
+$wixPreprocVariable_Src="var.Src"
+$wixComponentGroup = "MainApp"
+$wixInstallDir_IdAttr= "AppRootDir"
+& ${heat} dir ".\Cryptomator\" -cg ${wixComponentGroup} -dr ${wixInstallDir_IdAttr} -ag -srd -template fragment -nologo -sw193 -var ${wixPreprocVariable_Src} -t heatPostProcessing.xsl -out mainApp.wxs
+#4. build msi file 
+& ${candle} -nologo -out obj\ -arch x64 Product.wxs mainApp.wxs
+& ${light} -nologo -notidy -cultures:null -out .\MyTestApp.msi .\obj\Product.wixobj .\obj\mainApp.wixobj
+
+
+Set-Location ..
+# $env:CRYPTOMATOR_VERSION = "$upstreamVersion"
+# $env:DOKAN_VERSION = "$dokanInstallerVersion"
+# & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' setup.iss /Qp "/sdefault=`"$signtool`""
