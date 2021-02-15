@@ -305,7 +305,7 @@ begin
     if DokanPresentOnSystem then begin 
       if DokanComponentSelected then begin 
         if not IsInstalledDokanVersionSufficient() then begin
-          MsgBox('We detected an outdated Dokany version on your system. Please uninstall it first via "Apps & features" and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
+          MsgBox('We detected an outdated version of a third party library, "Dokan", on your system. Please uninstall the old version of "Dokan Library" first via "Apps and features" and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
           Result := False
         end;
       end else begin
