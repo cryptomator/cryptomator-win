@@ -7,7 +7,7 @@
 ;Version of the Programmatic Identifier the app uses. Windows extra, not the same as application version. 
 #define ProgIDVersion 1 
 
-SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
+;SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
 AppId=Cryptomator
 AppName=Cryptomator
 AppVersion={#AppVersion}
@@ -292,34 +292,6 @@ begin
 end;
 
 
-function NextButtonClick(CurPageID: Integer): Boolean;
-var
-  DokanComponentSelected: Boolean;
-  DokanPresentOnSystem: Boolean;
-  OutdatedAnswer : Integer;
-begin
-  Result := True;
-  if ( CurPageID = wpSelectComponents) then begin
-    DokanPresentOnSystem := (ReadDokanVersion <> -1);
-    DokanComponentSelected := WizardIsComponentSelected('dokan');
-    if DokanPresentOnSystem then begin 
-      if DokanComponentSelected then begin 
-        if not IsInstalledDokanVersionSufficient() then begin
-          MsgBox('We detected an outdated version of a third party library, "Dokan", on your system. Please uninstall the old version of "Dokan Library" first via "Apps and features" and perform a reboot. Afterwards continue with the installation.', mbInformation, MB_OK);
-          Result := False
-        end;
-      end else begin
-        //inform user about risk
-        OutdatedAnswer := MsgBox('We detected Dokany is already installed on your system, but it is not a selected component. Cryptomator will be able to use it, but it might be an outdated version missing important bug fixes and improvements. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
-        if OutdatedAnswer = IDNO then begin
-          Result := False; 
-        end;
-      end;
-    end;
-  end;
-end;
-
-
 function WizardVerySilent: Boolean;
 var
   i: Integer;
@@ -342,11 +314,36 @@ begin
   Result := '/i "'+dokanInstallerPath+'"';
   if WizardSilent then
   begin
-    if WizardVerySilent then 
-      //show absolutely nuthin'
-      Result := Result + ' /qn';
-    else
+    if WizardVerySilent then begin
+      Result := Result + ' /qn'; //show absolutely nuthin'
+    end else begin
       Result := Result + ' /passive';
+    end;
   end;
+end;
+
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  DokanComponentSelected: Boolean;
+  DokanPresentOnSystem: Boolean;
+  OutdatedAnswer : Integer;
+begin
+    Result := '';
+    DokanPresentOnSystem := (ReadDokanVersion <> -1);
+    DokanComponentSelected := WizardIsComponentSelected('dokan');
+    if DokanPresentOnSystem then begin 
+      if DokanComponentSelected then begin 
+        if not IsInstalledDokanVersionSufficient() then begin
+          Result := 'The installer detected a selected, but outdated component: Dokan File System Driver.'#13#10'To update it, uninstall/remove "Dokan Library" (e.g. via "Apps and features") from your system and perform a reboot. Afterwards you can continue with the installation.'#13#10#13#10'This requirement can be disabled by deselecting the "Dokan File System Driver" component in the components selection screen.';
+        end;
+      end else begin
+        //inform user about risk
+        OutdatedAnswer := MsgBox('We detected Dokany is already installed on your system, but it is not a selected component. Cryptomator will be able to use it, but it might be an outdated version missing important bug fixes and improvements. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
+        if OutdatedAnswer = IDNO then begin
+          Result := ''; 
+        end;
+      end;
+    end;
 end;
 
