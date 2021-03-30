@@ -7,7 +7,7 @@
 ;Version of the Programmatic Identifier the app uses. Windows extra, not the same as application version. 
 #define ProgIDVersion 1 
 
-;SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
+SignTool=default /tr http://timestamp.comodoca.com /fd sha256 /d $qCryptomator$q $f
 AppId=Cryptomator
 AppName=Cryptomator
 AppVersion={#AppVersion}
