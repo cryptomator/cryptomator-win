@@ -327,7 +327,7 @@ function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   DokanComponentSelected: Boolean;
   DokanPresentOnSystem: Boolean;
-  OutdatedAnswer : Integer;
+  ContinueAnswer : Integer;
 begin
     Result := '';
     DokanPresentOnSystem := (ReadDokanVersion <> -1);
@@ -339,9 +339,9 @@ begin
         end;
       end else begin
         //inform user about risk
-        OutdatedAnswer := MsgBox('We detected Dokany is already installed on your system, but it is not a selected component. Cryptomator will be able to use it, but it might be an outdated version missing important bug fixes and improvements. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
-        if OutdatedAnswer = IDNO then begin
-          Result := ''; 
+        ContinueAnswer := MsgBox('We detected Dokany is already installed on your system, but it is not a selected component. Cryptomator will be able to use it, but it might be an outdated version missing important bug fixes and improvements. Do you still want to continue? ', mbConfirmation, MB_YESNO or MB_DEFBUTTON2);
+        if ContinueAnswer = IDNO then begin
+          Result := 'Installation stopped by user.'; 
         end;
       end;
     end;
