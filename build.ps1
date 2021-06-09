@@ -98,3 +98,5 @@ Set-Location app/
 $env:CRYPTOMATOR_VERSION = "$upstreamVersion"
 $env:DOKAN_VERSION = "$dokanInstallerVersion"
 & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' setup.iss /Qp "/sdefault=`"$signtool`""
+
+Set-Location ..
