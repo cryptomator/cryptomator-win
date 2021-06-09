@@ -102,7 +102,7 @@ Source: "Dokan_x64.msi"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinsta
 Name: "{group}\Cryptomator"; Filename: "{app}\Cryptomator.exe"; IconFilename: "{app}\Cryptomator.ico"
 
 [Run]
-Filename: "msiexec.exe"; Parameters: {code:SelectDokanInstallerOptions}; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; Check: not IsInstalledDokanVersionSufficient;
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"" {code:SilentInstallOrNot}"; StatusMsg: "Installing Dokan Driver..."; Flags: waituntilterminated; Components: dokan; Check: not IsInstalledDokanVersionSufficient;
 Filename: "net"; Parameters: "stop webclient"; StatusMsg: "Stopping WebClient..."; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "net"; Parameters: "start webclient"; StatusMsg: "Restarting WebClient..."; BeforeInstall: PrepareForWebDAV; Flags: waituntilterminated runhidden; Components: webdav
 Filename: "{app}\Cryptomator.exe"; Description: "{cm:LaunchProgram,Cryptomator}"; Flags: nowait postinstall skipifsilent
@@ -306,18 +306,15 @@ begin
 end;
 
 
-function SelectDokanInstallerOptions(Param: String): String;
-var
-  DokanInstallerPath: String;
+function SilentInstallOrNot(Param: String): String;
 begin
-  DokanInstallerPath := ExpandConstant('{tmp}\Dokan_x64.msi');
-  Result := '/i "'+dokanInstallerPath+'"';
+  Result :='';
   if WizardSilent then
   begin
     if WizardVerySilent then begin
-      Result := Result + ' /qn'; //show absolutely nuthin'
+      Result := ' /qn'; //show absolutely nuthin'
     end else begin
-      Result := Result + ' /passive';
+      Result := ' /passive';
     end;
   end;
 end;
