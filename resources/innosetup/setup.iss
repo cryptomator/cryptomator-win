@@ -69,7 +69,7 @@ Root: HKCR; Subkey: "CryptomatorEncryptedData"; Flags: dontcreatekey deletekey
 
 ; .cryptomator filetype: Add extension, MIME type, perceived type, description, icon and command
 Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: ""; ValueData: "Cryptomator.MasterkeyFile.{#ProgIDVersion}"
-Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: "Content Type"; ValueData: "application/x-vnd.cryptomator.vault-metadata"
+Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: "Content Type"; ValueData: "application/vnd.cryptomator.vault"
 Root: HKA; Subkey: "Software\Classes\.cryptomator"; ValueType: string; ValueName: "PerceivedType"; ValueData: "text"
 
 Root: HKA; Subkey: "Software\Classes\Cryptomator.MasterkeyFile.{#ProgIDVersion}"; ValueType: string; ValueName: ""; ValueData: "Cryptomator Masterkey File"; Flags: deletekey uninsdeletekey
